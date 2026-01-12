@@ -1,0 +1,67 @@
+# Calypso Integration Landscape - Contexto para Diagrama Manim
+
+## Objetivo
+Generar un diagrama animado en Manim que muestre la arquitectura de integración de Calypso como plataforma central (transistor/puerta) que conecta diferentes tipos de sistemas.
+
+## Layout General
+
+```
+[INFRAESTRUCTURA]                                    [SISTEMAS APLICATIVOS]
+    CLIENTE              ┌─────────┐                      INTERNOS
+        ◄───────────────►│ CALYPSO │◄───────────────────────►
+                         └────┬────┘
+                              │              [PROVEEDORES EXTERNOS]
+                              └─────────────────────►  PUBLICOS
+```
+
+## Componentes
+
+### Centro: CALYPSO
+- Posición: Centro del canvas
+- Rol: Plataforma front-to-back, actúa como puerta/transistor
+- Visual: Caja destacada, color distintivo
+
+### Izquierda: INFRAESTRUCTURA CLIENTE
+- Posición: Lado izquierdo
+- Contenido:
+  - Active Directory (AD)
+  - API Management (APIM)
+  - Monitoreo
+  - Respaldo
+- Visual: Caja con lista de servicios
+
+### Derecha Arriba: SISTEMAS APLICATIVOS INTERNOS
+- Posición: Lado derecho, parte superior
+- Contenido:
+  - Motor de pagos
+  - Servicios on-prem
+  - Consultas locales
+- Visual: Caja con lista de servicios
+
+### Derecha Abajo: PROVEEDORES EXTERNOS PUBLICOS
+- Posición: Lado derecho, parte inferior
+- Contenido:
+  - Bloomberg
+  - NASDAQ
+  - Reuters
+  - SWIFT
+  - Exchanges
+  - Clearing houses
+- Visual: Caja con lista de servicios
+
+## Conexiones
+- Líneas bidireccionales entre Calypso y cada caja satélite
+- Calypso es el único punto de conexión (no hay conexiones directas entre satélites)
+
+## Título
+- "Calypso Integration Landscape"
+- Posición: Parte superior del diagrama
+
+## Estilo Visual
+- Colores corporativos/profesionales
+- Fuentes claras y legibles
+- Diseño limpio y minimalista
+
+## Fase 2 (futuro)
+- Animar transacciones fluyendo entre sistemas a través de Calypso
+- Mostrar el flujo de datos en tiempo real
