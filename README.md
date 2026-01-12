@@ -1,8 +1,6 @@
-# calypso-integration-landscape
+# Calypso Integration Landscape (CLI)
 
 ---
-
-# Calypso Integration Landscape (CLI)
 
 ## Descripción general
 
@@ -137,14 +135,4 @@ El proyecto avanza de forma incremental y con versionado conservador.
 
 Este repositorio tiene fines **educativos y de referencia conceptual**.
 La licencia open source se definirá una vez estabilizada la estructura.
-
----
-
-Cuando quieras, el siguiente paso natural puede ser:
-
-* Agregar la versión v0.1 del proyecto
-* Incorporar el primer diagrama conceptual
-* Subir el primer script Manim base
-
-El repo ya existe. Ahora tiene identidad, límites claros y propósito.
 
