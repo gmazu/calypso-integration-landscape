@@ -80,6 +80,28 @@ Manim se utiliza para:
 
 Las animaciones priorizan **claridad explicativa** por sobre efectos visuales.
 
+### Instalación de Manim
+
+```bash
+# Instalar dependencias del sistema (Ubuntu/Debian)
+sudo apt install build-essential python3-dev libcairo2-dev libpango1.0-dev ffmpeg
+
+# Instalar Manim via pip
+pip install manim
+```
+
+### Ejecutar diagramas
+
+```bash
+# Calidad baja (rápido, para pruebas)
+manim -pql src/calypso_landscape.py CalypsoLandscape
+
+# Calidad alta (para exportar)
+manim -pqh src/calypso_landscape.py CalypsoLandscape
+```
+
+El video generado se guarda en `media/videos/`.
+
 ---
 
 ## Estructura del repositorio (intención inicial)

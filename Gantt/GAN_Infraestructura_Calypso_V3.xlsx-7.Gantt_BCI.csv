@@ -1,0 +1,32 @@
+,Fecha llegada máquinas,2026-02-10,Nota: edita B1 con la fecha real de llegada.,,,,,
+Responsable / Área,Fase,Tarea,Descripción,Tiempo aproximado (días),Fecha inicio (desde llegada),Fecha fin (calculada),Fecha límite (hito),"Dependencias / Inputs (IP, VLAN, AD, FW, ventanas, etc.)"
+,Fase 0 - Preparación,Revisión programación general,"Revisar secuencia completa, dependencias y equipos involucrados.","0,5",2026-02-10,2026-02-10,,
+Proveedor,Entrega de Caracteristicas HW,Enviare inforaacion de HW,,,,,,
+Housing (Raul Dasa Oses),Fase 1 - Instalación física,Recepción equipos,Recepción física y validación de hardware.,"0,5",2026-02-10,2026-02-10,2026-02-10,Confirmar ventana de entrega / guía de despacho / contacto DC
+Housing (Raul Dasa Oses),Fase 1 - Instalación física,Levantamiento U,Cálculo de U separables e inseparables.,"0,5",2026-02-10,2026-02-10,,"Ficha técnica HW: altura U, rieles, profundidad, peso"
+Housing (Raul Dasa Oses),Fase 1 - Instalación física,Asignación rack,Definir rack y posiciones RU exactas.,"0,5",2026-02-10,2026-02-10,,Capacidad racks / RU disponibles / plano DC
+Housing (Raul Dasa Oses),Fase 1 - Instalación física,Validación energía,Validar consumo eléctrico por rack.,"0,5",2026-02-10,2026-02-10,,"Consumo por equipo (W), tipo de PSU, PDU disponible (A/B)"
+Housing (Raul Dasa Oses),Fase 1 - Instalación física,Asigancion de IPs,,,,,,
+Equipoi Infra,Solicitrdes VPN para proveedores,VAlidar Accesos ,Acceso IPs y Puertos,,,,,
+Proveedor,Fase 1 - Instalación física,Instalacion Fisica Real,Incluye ILO,,,,,
+Despues o el mismo dia,Fase 1 - Instalación física,Cableado red productiva,Conexión NICs productivas.,"0,5",2026-02-10,2026-02-10,,"Switch/puertos asignados, VLANs, patch cords, etiquetado"
+Despues o el mismo dia,Fase 1 - Instalación física,Cableado administración,Conexión iLO / iDRAC.,"0,5",2026-02-10,2026-02-10,,"Red de gestión, IPs OOB, puertos switch mgmt, credenciales iniciales"
+Despues o el mismo dia,Fase 1 - Instalación física,Cableado Fibra,Storage,,,,,
+Proveedor,Fase 1 - Instalación física,Encendido inicial,Encendido y validación consola.,"0,5",2026-02-10,2026-02-10,,
+,,,,,,,,
+Miguel Six BCI,Fase 2 - Software base,Instalación SO,Instalación sistema operativo corporativo.,1,2026-02-10,2026-02-10,,"Imagen SO corporativa, credenciales, ventana de instalación, acceso consola"
+Proveedor,Fase 3 - Proveedor,Instalación aplicativo,Instalación software proveedor.,1,2026-02-10,2026-02-10,,"Media/licencias proveedor, prerequisitos, cuentas de servicio"
+,,,,,,,,
+Miguel Six BCI,Fase 2 - Software base,Agentes monitoreo,Instalación Nagios / Grafana.,"0,5",2026-02-10,2026-02-10,,"Paquetes/agentes, endpoint, puertos FW, alta en monitoreo"
+Miguel Six BCI,Fase 2 - Software base,Agente Splunk,Instalación agente Splunk.,"0,5",2026-02-10,2026-02-10,,"Deployment server Splunk, puertos FW, token/certificados si aplica"
+Miguel Six BCI,Fase 2 - Software base,Agente seguridad,Instalación antivirus y hardening.,"0,5",2026-02-10,2026-02-10,,"Consola AV, políticas, puertos FW, ventana con equipo seguridad"
+,,,,,,,,
+,,,,,,,,
+Proveedor,Fase 4 - Integraciones SO,AD / IAM,Integración con Active Directory e IAM.,1,2026-02-10,2026-02-10,,"OU/grupos AD, cuentas, reglas IAM, solicitudes de alta"
+Proveedor,Fase 4 - Integraciones SO,OAuth / API,Integración OAuth y APIs.,1,2026-02-10,2026-02-10,,"Endpoints, certificados, reglas FW/WAF, client_id/secret"
+,,,,,,,,
+Proveedor,Fase 5 - Satélites,MDP,Integración sistema MDP.,1,2026-02-10,2026-02-10,,"Conectividad, reglas FW, IPs origen/destino, validación con contraparte"
+Proveedor,Fase 5 - Satélites,Nasdaq,Integración Nasdaq.,1,2026-02-10,2026-02-10,,"Conectividad, reglas FW, IPs origen/destino, validación con contraparte"
+Proveedor,Fase 6 - QA,Pruebas carga,Pruebas funcionales y stress.,2,2026-02-10,2026-02-11,,"Herramienta de carga, datos de prueba, ventana, umbrales, monitoreo activo"
+,,,,,,,,
+Equipoi Infra,Fase 7 - Entrega,Entrega equipos,Entrega formal y confirmación de responsabilidades.,1,2026-02-11,2026-02-11,,"RACI/operación, runbooks, contactos on-call, criterios de aceptación"

@@ -1,0 +1,89 @@
+,,,,,,,,,
+,En riesgo,Nombre de la tarea,Estado,Asignado a,Fecha de inicio,Fecha de finalización,Porcentaje completo,Duración,Predecesores
+1,,Hablitación Plataforma Calypso Banco BCI,En progreso,Sixmanager,06/01/26,29/04/26,3%,82d,
+2,,Ambiente Pre Productivo,,Sixmanager,06/01/26,29/04/26,3%,82d,
+3,,Kick off y requerimientos,,,06/01/26,06/01/26,100%,1d,
+4,,Inicio formal del proyecto (Kick Off),Completo,Sixmanager - BCI,06/01/26,06/01/26,100%,1d,
+5,,Kickoff realizado,Completo,Sixmanager - BCI,06/01/26,06/01/26,100%,0,
+6,,Habilitacion de infrastructura fisica (Pre requisitos),,,23/02/26,03/03/26,0%,7d,
+7,,Recepcion de servidores DELL,No se ha iniciado,BCI,27/02/26,27/02/26,0%,1d,
+8,,Direccionamiento IP / VLAN / PORT,No se ha iniciado,BCI,23/02/26,23/02/26,0%,1d,
+9,,Espacio en data center para nuevo HW (Ru's),No se ha iniciado,BCI,24/02/26,24/02/26,0%,1d,
+10,,Coordinacion de hardware a data center BCI,No se ha iniciado,"Sixmanager, BCI",25/02/26,25/02/26,0%,1d,
+11,,Gestión de accesos vpn a Servidores,No se ha iniciado,BCI,26/02/26,26/02/26,0%,1d,
+12,,Disponibilidad de puertas para conectividad,No se ha iniciado,BCI,23/02/26,23/02/26,0%,1d,
+81,,Levantamiento U,No se ha iniciado,Housing (Raul Dasa Oses),10/02/26,10/02/26,0%,"0,5d",12
+82,,Asignación rack,No se ha iniciado,Housing (Raul Dasa Oses),10/02/26,10/02/26,0%,"0,5d",81
+83,,Validación energía,No se ha iniciado,Housing (Raul Dasa Oses),10/02/26,10/02/26,0%,"0,5d",82
+84,,Cableado red productiva,No se ha iniciado,Despues o el mismo dia,10/02/26,10/02/26,0%,"0,5d",83
+85,,Cableado administración,No se ha iniciado,Despues o el mismo dia,10/02/26,10/02/26,0%,"0,5d",84
+86,,Cableado Fibra,No se ha iniciado,Despues o el mismo dia,10/02/26,10/02/26,0%,,85
+87,,Encendido inicial,No se ha iniciado,Proveedor,10/02/26,10/02/26,0%,"0,5d",86
+13,,Rackeo y conecticvidad de equipos en Aconcagua (Encendido y sanity boot),No se ha iniciado,"Sixmanager, BCI",02/03/26,02/03/26,0%,1d,87
+14,,Rackeo y conecticvidad de equipos en Longovilo- 3er sitio (Encendido y sanity boot),No se ha iniciado,"Sixmanager, BCI",03/03/26,03/03/26,0%,1d,13
+15,,Infraestructura instalada,No se ha iniciado,Sixmanager,03/03/26,03/03/26,0%,0,14
+16,,Plan de implementacion,,,26/01/26,27/04/26,2%,66d,
+17,,Revisión y levantamiento de infraestructura actual,No se ha iniciado,Sixmanager,26/01/26,30/01/26,0%,5d,
+18,,Diseño detallado de arquitectura preproductiva,No se ha iniciado,Sixmanager,02/02/26,06/02/26,0%,5d,
+19,,Aprobación de diseño por parte del cliente,No se ha iniciado,BCI,06/02/26,06/02/26,0%,0,18
+20,,Prerrequisitos,,,02/02/26,17/03/26,4%,32d,
+21,,Entrega documento prerrequisitos,No se ha iniciado,Sixmanager,02/02/26,02/02/26,50%,1d,
+22,,Reglas de acceso (Permisos en firewall entre redes y hacia internet),No se ha iniciado,BCI,04/03/26,06/03/26,0%,3d,15
+23,,"Registros DNS requeridos (Subdominios, registros tipo A, Reversos)",No se ha iniciado,BCI,09/03/26,11/03/26,0%,3d,22
+24,,Accesos a servicios de red (Load Balancer / NTP),No se ha iniciado,BCI,12/03/26,16/03/26,0%,3d,23
+25,,Validación de Prerrequisitos,No se ha iniciado,Sixmanager,17/03/26,17/03/26,0%,1d,24
+26,,Generación de certificados,No se ha iniciado,BCI,11/03/26,13/03/26,0%,3d,
+27,,Prerrequisitos entregados,No se ha iniciado,Sixmanager,17/03/26,17/03/26,0%,0,25
+28,,Habilitación OLVM y BD,,,18/03/26,26/03/26,0%,7d,
+29,,Instalación de Hypervisor,No se ha iniciado,Sixmanager,18/03/26,19/03/26,0%,2d,27
+30,,Configuración de Networking,No se ha iniciado,"Sixmanager, BCI",20/03/26,20/03/26,0%,1d,29
+31,,Integración con redes SAN,No se ha iniciado,"Sixmanager, BCI",23/03/26,23/03/26,0%,1d,30
+32,,Despliegue de HostedEngine,No se ha iniciado,Sixmanager,24/03/26,24/03/26,0%,1d,31
+33,,Integración con redes del cliente,No se ha iniciado,Sixmanager,25/03/26,25/03/26,0%,1d,32
+34,,"Creación de VMS utility Openshift (Bastión, Bootstrap)",No se ha iniciado,Sixmanager,26/03/26,26/03/26,0%,1d,33
+35,,Habilitación BD Finalizada,No se ha iniciado,Sixmanager,26/03/26,26/03/26,0%,0,34
+36,,Habilitación Cluster Openshift Pre Productivo,,,27/03/26,16/04/26,0%,15d,
+37,,Creación de Bootstrap,No se ha iniciado,Sixmanager,27/03/26,27/03/26,,1d,34
+38,,Despliegue Openshift Bare Metal,No se ha iniciado,Sixmanager,30/03/26,03/04/26,0%,5d,37
+39,,Configuraciones Post Instalación,No se ha iniciado,Sixmanager,06/04/26,07/04/26,0%,2d,38
+40,,Integración con redes de cliente,No se ha iniciado,Sixmanager,08/04/26,08/04/26,0%,1d,39
+41,,Habilitación de operador CSI,No se ha iniciado,Sixmanager,09/04/26,10/04/26,0%,2d,40
+42,,Pruebas Funcionales,No se ha iniciado,"Sixmanager, BCI",13/04/26,13/04/26,0%,1d,41
+43,,Documentación,No se ha iniciado,Sixmanager,14/04/26,15/04/26,0%,2d,42
+44,,Sesión de entrega,No se ha iniciado,"Sixmanager, BCI",16/04/26,16/04/26,0%,1d,43
+45,,Cluster Preproductivo instalado,No se ha iniciado,Sixmanager,16/04/26,16/04/26,0%,0,44
+46,,Habilitación BBDD,,,20/03/26,27/03/26,0%,6d,
+47,,Creación de máquinas virtuales BBDD,No se ha iniciado,Sixmanager,27/03/26,27/03/26,0%,1d,35
+48,,Incorporación de LUNS para servidores BBDD,No se ha iniciado,Sixmanager,20/03/26,20/03/26,0%,1d,29
+49,,Instalación y configuración Base de datos Oracle,No se ha iniciado,Sixmanager,23/03/26,25/03/26,0%,3d,48
+50,,Pruebas funcionales,No se ha iniciado,Sixmanager,,,0%,1d,
+51,,Documentación,No se ha iniciado,Sixmanager,23/03/26,24/03/26,0%,2d,30
+52,,Sesión de entrega,No se ha iniciado,"Sixmanager, BCI",25/03/26,25/03/26,0%,1d,51
+53,,Habilitación BD Finalizada,No se ha iniciado,Sixmanager,25/03/26,25/03/26,0%,0,52
+54,,Integración de componentes,,,17/04/26,24/04/26,0%,"5,5d",
+55,,Integración de OCP con B.D.,No se ha iniciado,"Sixmanager, BCI",17/04/26,17/04/26,0%,"0,5d",45; 53
+56,,Integración de OCP con Storage vía CSI,No se ha iniciado,"Sixmanager, BCI",17/04/26,17/04/26,0%,1d,45
+57,,Integración de OLVM con Storage,No se ha iniciado,"Sixmanager, BCI",17/04/26,17/04/26,0%,"0,5d",45
+58,,Integración con Observabilidad y monitoreo de cliente (Nagios - Dynatrace),No se ha iniciado,"Sixmanager, BCI",17/04/26,21/04/26,0%,2d,57
+59,,Integración Active Directory,No se ha iniciado,"Sixmanager, BCI",21/04/26,22/04/26,0%,1d,58
+60,,Integración con repositorio Git,No se ha iniciado,"Sixmanager, BCI",22/04/26,23/04/26,0%,1d,59
+61,,Integración con Respaldos de cliente,No se ha iniciado,"Sixmanager, BCI",23/04/26,24/04/26,0%,1d,60
+62,,Fin Etapa integración,No se ha iniciado,Sixmanager,24/04/26,24/04/26,0%,0,61
+63,,Despliegue y migracion de aplicaciones en DEV/UAT/INT,,,17/04/26,27/04/26,0%,7d,
+64,,Reunion de migracion,No se ha iniciado,"Sixmanager, BCI",17/04/26,17/04/26,0%,"0,5d",45; 53
+65,,Revisión de prerrequisitos,No se ha iniciado,"Sixmanager, BCI",17/04/26,17/04/26,0%,"0,5d",64
+66,,Despliegue de aplicaciones en GIT,No se ha iniciado,"Sixmanager, BCI",20/04/26,20/04/26,0%,1d,65
+67,,Descarga de imagenes base,No se ha iniciado,"Sixmanager, BCI",21/04/26,21/04/26,0%,1d,66
+68,,Integracion y despliegue de aplicación sobre OCP,No se ha iniciado,"Sixmanager, BCI",22/04/26,22/04/26,0%,1d,67
+69,,Migracion de archivos YAML,No se ha iniciado,"Sixmanager, BCI",23/04/26,23/04/26,0%,1d,68
+70,,Migracion de base de datos,No se ha iniciado,Sixmanager,24/04/26,24/04/26,0%,1d,69
+71,,Pruebas de aplicación,No se ha iniciado,BCI,27/04/26,27/04/26,0%,1d,70
+72,,Fin despliegue aplicación,No se ha iniciado,Sixmanager,27/04/26,27/04/26,0%,0,71
+73,,Cierre formal de la Fase 1,,,28/04/26,29/04/26,0%,2d,
+74,,Reunión de entrega de documentación y presentación de la solución,No se ha iniciado,"Sixmanager, BCI",28/04/26,28/04/26,0%,1d,72
+75,,Soporte post implementación (evolutivo),No se ha iniciado,"Sixmanager, BCI",29/04/26,29/04/26,0%,1d,74
+76,,Cierre Proyecto Etapa Preproducción,No se ha iniciado,"Sixmanager, BCI",28/04/26,28/04/26,0%,0,
+77,,,,,,,,,
+78,,,,,,,,,
+79,,,,,,,,,
+80,,,,,,,,,

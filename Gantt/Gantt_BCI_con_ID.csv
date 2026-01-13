@@ -1,0 +1,32 @@
+,Fecha llegada máquinas,2026-02-10,Nota: edita B1 con la fecha real de llegada.,,,,,
+ID_BCI,Responsable / Área,Fase,Tarea,Descripción,Tiempo aproximado (días),Fecha inicio (desde llegada),Fecha fin (calculada),Fecha límite (hito),"Dependencias / Inputs (IP, VLAN, AD, FW, ventanas, etc.)"
+ID-BCI-01,,Fase 0 - Preparación,Revisión programación general,"Revisar secuencia completa, dependencias y equipos involucrados.","0,5",2026-02-10,2026-02-10,,
+ID-BCI-02,Proveedor,Entrega de Caracteristicas HW,Enviare inforaacion de HW,,,,,,
+ID-BCI-03,Housing (Raul Dasa Oses),Fase 1 - Instalación física,Recepción equipos,Recepción física y validación de hardware.,"0,5",2026-02-10,2026-02-10,2026-02-10,Confirmar ventana de entrega / guía de despacho / contacto DC
+ID-BCI-04,Housing (Raul Dasa Oses),Fase 1 - Instalación física,Levantamiento U,Cálculo de U separables e inseparables.,"0,5",2026-02-10,2026-02-10,,"Ficha técnica HW: altura U, rieles, profundidad, peso"
+ID-BCI-05,Housing (Raul Dasa Oses),Fase 1 - Instalación física,Asignación rack,Definir rack y posiciones RU exactas.,"0,5",2026-02-10,2026-02-10,,Capacidad racks / RU disponibles / plano DC
+ID-BCI-06,Housing (Raul Dasa Oses),Fase 1 - Instalación física,Validación energía,Validar consumo eléctrico por rack.,"0,5",2026-02-10,2026-02-10,,"Consumo por equipo (W), tipo de PSU, PDU disponible (A/B)"
+ID-BCI-07,Housing (Raul Dasa Oses),Fase 1 - Instalación física,Asigancion de IPs,,,,,,
+ID-BCI-08,Equipoi Infra,Solicitrdes VPN para proveedores,VAlidar Accesos ,Acceso IPs y Puertos,,,,,
+ID-BCI-09,Proveedor,Fase 1 - Instalación física,Instalacion Fisica Real,Incluye ILO,,,,,
+ID-BCI-10,Despues o el mismo dia,Fase 1 - Instalación física,Cableado red productiva,Conexión NICs productivas.,"0,5",2026-02-10,2026-02-10,,"Switch/puertos asignados, VLANs, patch cords, etiquetado"
+ID-BCI-11,Despues o el mismo dia,Fase 1 - Instalación física,Cableado administración,Conexión iLO / iDRAC.,"0,5",2026-02-10,2026-02-10,,"Red de gestión, IPs OOB, puertos switch mgmt, credenciales iniciales"
+ID-BCI-12,Despues o el mismo dia,Fase 1 - Instalación física,Cableado Fibra,Storage,,,,,
+ID-BCI-13,Proveedor,Fase 1 - Instalación física,Encendido inicial,Encendido y validación consola.,"0,5",2026-02-10,2026-02-10,,
+,,,,,,,,,
+ID-BCI-14,Miguel Six BCI,Fase 2 - Software base,Instalación SO,Instalación sistema operativo corporativo.,1,2026-02-10,2026-02-10,,"Imagen SO corporativa, credenciales, ventana de instalación, acceso consola"
+ID-BCI-15,Proveedor,Fase 3 - Proveedor,Instalación aplicativo,Instalación software proveedor.,1,2026-02-10,2026-02-10,,"Media/licencias proveedor, prerequisitos, cuentas de servicio"
+,,,,,,,,,
+ID-BCI-16,Miguel Six BCI,Fase 2 - Software base,Agentes monitoreo,Instalación Nagios / Grafana.,"0,5",2026-02-10,2026-02-10,,"Paquetes/agentes, endpoint, puertos FW, alta en monitoreo"
+ID-BCI-17,Miguel Six BCI,Fase 2 - Software base,Agente Splunk,Instalación agente Splunk.,"0,5",2026-02-10,2026-02-10,,"Deployment server Splunk, puertos FW, token/certificados si aplica"
+ID-BCI-18,Miguel Six BCI,Fase 2 - Software base,Agente seguridad,Instalación antivirus y hardening.,"0,5",2026-02-10,2026-02-10,,"Consola AV, políticas, puertos FW, ventana con equipo seguridad"
+,,,,,,,,,
+,,,,,,,,,
+ID-BCI-19,Proveedor,Fase 4 - Integraciones SO,AD / IAM,Integración con Active Directory e IAM.,1,2026-02-10,2026-02-10,,"OU/grupos AD, cuentas, reglas IAM, solicitudes de alta"
+ID-BCI-20,Proveedor,Fase 4 - Integraciones SO,OAuth / API,Integración OAuth y APIs.,1,2026-02-10,2026-02-10,,"Endpoints, certificados, reglas FW/WAF, client_id/secret"
+,,,,,,,,,
+ID-BCI-21,Proveedor,Fase 5 - Satélites,MDP,Integración sistema MDP.,1,2026-02-10,2026-02-10,,"Conectividad, reglas FW, IPs origen/destino, validación con contraparte"
+ID-BCI-22,Proveedor,Fase 5 - Satélites,Nasdaq,Integración Nasdaq.,1,2026-02-10,2026-02-10,,"Conectividad, reglas FW, IPs origen/destino, validación con contraparte"
+ID-BCI-23,Proveedor,Fase 6 - QA,Pruebas carga,Pruebas funcionales y stress.,2,2026-02-10,2026-02-11,,"Herramienta de carga, datos de prueba, ventana, umbrales, monitoreo activo"
+,,,,,,,,,
+ID-BCI-24,Equipoi Infra,Fase 7 - Entrega,Entrega equipos,Entrega formal y confirmación de responsabilidades.,1,2026-02-11,2026-02-11,,"RACI/operación, runbooks, contactos on-call, criterios de aceptaci´ón"

@@ -1,0 +1,13 @@
+1, Nombre equipo
+2, Tipo equipo
+3, Marca o Fabricante
+4, Modelo
+5, N° Serie
+6, Propietario
+7, Cliente
+8, Ubicación (Fila y Rack), Sala
+9, Tamaño (UR)
+10, Requerimientos de consumo eléctrico necesarios
+11, Disipación térmica (BTU’s)
+12, Cantidad de puertos de red a cablear
+13, Cantidad de puertos de fibra para storage
