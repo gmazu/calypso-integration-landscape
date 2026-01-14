@@ -1,0 +1,25 @@
+ALTA,IDENTIFICACIÓN EQUIPO FISICO,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios
+,Nombre equipo,lnx-prdclpcbaco1,,lnx-prdclpcbaco2,,lnx-prdclpcbaco3,,lnx-prdclpcbbdaco1,,lnx-prdclpcbbdaco2,,Storage_CLPCB_ACO
+,Tipo equipo,Servidor,,Servidor,,Servidor,,Servidor,,Servidor,,Storage
+,Marca o Fabricante,Dell,,Dell,,Dell,,Dell,,Dell,,Dell
+,Modelo,R760,,R760,,R760,,R760,,R760,,Powerstore 1200T
+,N° Serie,CTX8MC4,,FTX8MC4 ,,DTX8MC4,,1TX8MC4,,JSX8MC4,,TBD
+,Propietario ,BCI Seguros,,BCI Seguros,,BCI Seguros,,BCI Seguros,,BCI Seguros,,BCI Seguros
+,Cliente,BCI Seguros,,BCI Seguros,,BCI Seguros,,BCI Seguros,,BCI Seguros,,BCI Seguros
+,"Ubicación (Fila y Rack), Sala",Asignado por Housing	,,Asignado por Housing,,Asignado por Housing,,Asignado por Housing,,Asignado por Housing,,Asignado por Housing
+,Tamaño  (UR),2UR,,2UR,,2UR,,2UR,,2UR,,2UR
+,Requerimientos de consumo eléctrico necesarios,1400w,,1400w,,1400w,,1400w,,1400w,,1800w
+,Disipación térmica (BTU’s).,5250/h,,5250/h,,5250/h,,5250/h,,5250/h,,TBD
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+MOFIFICACION,IDENTIFICACIÓN EQUIPO FISICO,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios
+,Nombre equipo,,,,,,,,,,,
+,Rótulo,,,,,,,,,,,
+,N° Serie,,,,,,,,,,,
+,Ubicación (Sala y Rack),,,,,,,,,,,
+,Explicar Cambio,,,,,,,,,,,
+,,,,,,,,,,,,
+BAJAS,IDENTIFICACIÓN EQUIPO FISICO,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios,,Datos Obligatorios
+,Rótulo,,,,,,,,,,,
+,N° Serie,,,,,,,,,,,
+,Ubicación (Sala y Rack),,,,,,,,,,,
