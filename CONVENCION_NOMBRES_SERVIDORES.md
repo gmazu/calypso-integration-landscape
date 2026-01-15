@@ -10,6 +10,13 @@ El nombre de cada servidor se compone de seis partes separadas por guiones, sigu
 
 ---
 
+### Consideraciones Adicionales
+
+*   **Límite Técnico:** El sistema operativo Linux permite nombres de host de hasta 64 caracteres. Nuestra convención está muy por debajo de este límite.
+*   **Recomendación de Legibilidad:** Aunque el límite técnico es amplio, para facilitar la lectura y la gestión, se recomienda mantener la estructura de 6 a 7 componentes con códigos cortos (idealmente 3 caracteres por componente). Esto resulta en nombres de entre 20 y 25 caracteres, un tamaño óptimo para la legibilidad.
+
+---
+
 ### 1. Sistema Operativo (OS)
 
 Indica el sistema operativo principal del servidor.
@@ -77,6 +84,15 @@ Número de dos dígitos que identifica de forma única al servidor dentro de un 
 | `01` | Primer servidor |
 | `02` | Segundo servidor |
 | `...` | etc. |
+
+---
+
+### Nota sobre Flexibilidad
+
+Esta convención de nombres está diseñada para ser mayormente estricta para garantizar la consistencia. Sin embargo, se permite cierta flexibilidad:
+
+*   **Campo `APLICACION`:** Este campo es flexible. Aunque el principal es `clp` para Calypso, el negocio puede definir nuevos códigos para otras aplicaciones que se integren en el futuro.
+*   **Otros Campos (`OS`, `ENTORNO`, `ROL`, `UBICACION`):** Estos campos son estrictos. Se deben usar únicamente los valores definidos en esta guía para mantener la estandarización.
 
 ---
 
