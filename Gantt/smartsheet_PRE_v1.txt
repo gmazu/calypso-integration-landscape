@@ -1,0 +1,90 @@
+import pandas as pd
+
+# Definición de los datos con niveles de identación
+# Nivel 0: Proyecto, Nivel 1: Ambiente, Nivel 2: Fase, Nivel 3: Tarea/Hito
+tasks = [
+    [1, 0, "Hablitación Plataforma Calypso Banco BCI", "En progreso", "Sixmanager", "06/01/26", "29/04/26", "8%", "81,5d", ""],
+    [2, 1, "Ambiente Pre Productivo", "En progreso", "Sixmanager", "06/01/26", "29/04/26", "8%", "81,5d", ""],
+    [3, 2, "Kick off y requerimientos", "", "", "06/01/26", "06/01/26", "100%", "1d", ""],
+    [4, 3, "Inicio formal del proyecto (Kick Off)", "Completo", "Sixmanager - BCI", "06/01/26", "06/01/26", "100%", "1d", ""],
+    [5, 3, "Kickoff realizado", "Completo", "Sixmanager - BCI", "06/01/26", "06/01/26", "100%", "0", ""],
+    [6, 2, "Habilitacion de infrastructura fisica (Pre requisitos)", "", "", "15/01/26", "03/03/26", "20%", "34d", ""],
+    [7, 3, "Solicitudes y formularios", "En progreso", "BCI, SixManager", "15/01/26", "26/01/26", "40%", "8d", ""],
+    [8, 3, "Recepcion de servidores DELL", "No iniciado", "BCI", "27/02/26", "27/02/26", "0%", "1d", ""],
+    [9, 3, "Direccionamiento IP / VLAN / PORT", "No iniciado", "BCI", "23/02/26", "23/02/26", "0%", "1d", ""],
+    [10, 3, "Espacio en data center para nuevo HW (Ru's)", "No iniciado", "BCI", "24/02/26", "24/02/26", "0%", "1d", ""],
+    [11, 3, "Coordinacion de hardware a data center BCI", "No iniciado", "Sixmanager, BCI", "25/02/26", "25/02/26", "0%", "1d", ""],
+    [12, 3, "Gestión de accesos vpn a Servidores", "No iniciado", "BCI", "26/02/26", "26/02/26", "0%", "1d", ""],
+    [13, 3, "Disponibilidad de puertas para conectividad", "No iniciado", "BCI", "23/02/26", "23/02/26", "0%", "1d", ""],
+    [14, 3, "Rackeo y conecticvidad de equipos en Aconcagua", "No iniciado", "Sixmanager, BCI", "02/03/26", "02/03/26", "0%", "1d", "8"],
+    [15, 3, "Rackeo y conecticvidad de equipos en Longovilo- 3er sitio", "No iniciado", "Sixmanager, BCI", "03/03/26", "03/03/26", "0%", "1d", "14"],
+    [16, 3, "Infraestructura instalada", "No iniciado", "Sixmanager", "03/03/26", "03/03/26", "0%", "0", "15"],
+    [17, 2, "Plan de implementacion", "", "", "26/01/26", "16/04/26", "2%", "58,5d", ""],
+    [18, 3, "Revisión y levantamiento de infraestructura actual", "No iniciado", "Sixmanager", "26/01/26", "30/01/26", "0%", "5d", ""],
+    [19, 3, "Diseño detallado de arquitectura preproductiva", "No iniciado", "Sixmanager", "02/02/26", "06/02/26", "0%", "5d", ""],
+    [20, 3, "Aprobación de diseño por parte del cliente", "No iniciado", "BCI", "06/02/26", "06/02/26", "0%", "0", "19"],
+    [21, 2, "Prerrequisitos", "", "", "02/02/26", "17/03/26", "4%", "32d", ""],
+    [22, 3, "Entrega documento prerrequisitos", "No iniciado", "Sixmanager", "02/02/26", "02/02/26", "50%", "1d", ""],
+    [23, 3, "Reglas de acceso (Permisos en firewall)", "No iniciado", "BCI", "04/03/26", "06/03/26", "0%", "3d", "16"],
+    [24, 3, "Registros DNS requeridos", "No iniciado", "BCI", "09/03/26", "11/03/26", "0%", "3d", "23"],
+    [25, 3, "Accesos a servicios de red (Load Balancer / NTP)", "No iniciado", "BCI", "12/03/26", "16/03/26", "0%", "3d", "24"],
+    [26, 3, "Validación de Prerrequisitos", "No iniciado", "Sixmanager", "17/03/26", "17/03/26", "0%", "1d", "25"],
+    [27, 3, "Generación de certificados", "No iniciado", "BCI", "11/03/26", "13/03/26", "0%", "3d", ""],
+    [28, 3, "Prerrequisitos entregados", "No iniciado", "Sixmanager", "17/03/26", "17/03/26", "0%", "0", "26"],
+    [29, 2, "Habilitación OLVM", "", "", "18/03/26", "26/03/26", "0%", "7d", ""],
+    [30, 3, "Instalación de Hypervisor", "No iniciado", "Sixmanager", "18/03/26", "19/03/26", "0%", "2d", "28"],
+    [31, 3, "Configuración de Networking", "No iniciado", "Sixmanager, BCI", "20/03/26", "20/03/26", "0%", "1d", "30"],
+    [32, 3, "Integración con redes SAN", "No iniciado", "Sixmanager, BCI", "23/03/26", "23/03/26", "0%", "1d", "31"],
+    [33, 3, "Despliegue de HostedEngine", "No iniciado", "Sixmanager", "24/03/26", "24/03/26", "0%", "1d", "32"],
+    [34, 3, "Integración con redes del cliente", "No iniciado", "Sixmanager", "25/03/26", "25/03/26", "0%", "1d", "33"],
+    [35, 3, "Creación de VMS utility Openshift", "No iniciado", "Sixmanager", "26/03/26", "26/03/26", "0%", "1d", "34"],
+    [36, 3, "Habilitación OLVM Finalizada", "No iniciado", "Sixmanager", "26/03/26", "26/03/26", "0%", "0", "35"],
+    [37, 2, "Habilitación Cluster Openshift Pre Productivo", "", "", "27/03/26", "10/04/26", "0%", "11d", ""],
+    [38, 3, "Creación de Bootstrap", "No iniciado", "Sixmanager", "27/03/26", "27/03/26", "", "1d", "35"],
+    [39, 3, "Despliegue Openshift Bare Metal", "No iniciado", "Sixmanager", "30/03/26", "03/04/26", "0%", "5d", "38"],
+    [40, 3, "Configuraciones Post Instalación", "No iniciado", "Sixmanager", "06/04/26", "07/04/26", "0%", "2d", "39"],
+    [41, 3, "Integración con redes de cliente", "No iniciado", "Sixmanager", "08/04/26", "08/04/26", "0%", "1d", "40"],
+    [42, 3, "Habilitación de operador CSI", "No iniciado", "Sixmanager", "09/04/26", "09/04/26", "0%", "1d", "41"],
+    [43, 3, "Sesión de entrega", "No iniciado", "Sixmanager, BCI", "10/04/26", "10/04/26", "0%", "1d", "42"],
+    [44, 3, "Cluster Preproductivo instalado", "No iniciado", "Sixmanager", "10/04/26", "10/04/26", "0%", "0", "43"],
+    [45, 2, "Habilitación BBDD", "", "", "24/03/26", "30/03/26", "0%", "5d", ""],
+    [46, 3, "Creación de máquinas virtuales BBDD", "No iniciado", "Sixmanager", "27/03/26", "27/03/26", "0%", "1d", "36"],
+    [47, 3, "Incorporación de LUNS para servidores BBDD", "No iniciado", "Sixmanager", "24/03/26", "24/03/26", "0%", "1d", "32"],
+    [48, 3, "Instalación y configuración Base de datos Oracle", "No iniciado", "Sixmanager", "25/03/26", "27/03/26", "0%", "3d", "47"],
+    [49, 3, "Sesión de entrega", "No iniciado", "Sixmanager, BCI", "30/03/26", "30/03/26", "0%", "1d", "48"],
+    [50, 3, "Habilitación BD Finalizada", "No iniciado", "Sixmanager", "30/03/26", "30/03/26", "0%", "0", "49"],
+    [51, 2, "Despliegue y migracion de aplicaciones en DEV/UAT/INT", "", "", "13/04/26", "16/04/26", "0%", "3,5d", ""],
+    [52, 3, "Reunion de migracion", "No iniciado", "Sixmanager, BCI", "13/04/26", "13/04/26", "0%", "0,5d", "44"],
+    [53, 3, "Revisión de prerrequisitos", "No iniciado", "Sixmanager, BCI", "13/04/26", "13/04/26", "0%", "0,5d", "52"],
+    [54, 3, "Descarga de imagenes base", "No iniciado", "Sixmanager, BCI", "15/04/26", "15/04/26", "0%", "1d", "63"],
+    [55, 3, "Migracion de archivos YAML", "No iniciado", "Sixmanager, BCI", "13/04/26", "14/04/26", "0%", "1d", "52"],
+    [56, 3, "Migracion de base de datos", "No iniciado", "Sixmanager", "14/04/26", "15/04/26", "0%", "1d", "55"],
+    [57, 3, "Pruebas de aplicación", "No iniciado", "BCI", "15/04/26", "16/04/26", "0%", "1d", "56"],
+    [58, 3, "Fin despliegue aplicación", "No iniciado", "Sixmanager", "16/04/26", "16/04/26", "0%", "0", "57"],
+    [59, 2, "Integración de componentes", "", "", "13/04/26", "24/04/26", "0%", "9,5d", ""],
+    [60, 3, "Integración de OCP con Storage vía CSI", "No iniciado", "Sixmanager, BCI", "13/04/26", "13/04/26", "0%", "1d", "44"],
+    [61, 3, "Integración con Observabilidad y monitoreo", "No iniciado", "Sixmanager, BCI", "16/04/26", "23/04/26", "0%", "5d", "58"],
+    [62, 3, "Integración Active Directory", "No iniciado", "Sixmanager, BCI", "23/04/26", "24/04/26", "0%", "1d", "61"],
+    [63, 3, "Despliegue de aplicaciones en GIT", "No iniciado", "Sixmanager, BCI", "14/04/26", "14/04/26", "0%", "1d", "53"],
+    [64, 3, "Integración con Respaldos de cliente", "No iniciado", "Sixmanager, BCI", "16/04/26", "23/04/26", "0%", "5d", "58"],
+    [65, 3, "Fin Etapa integración", "No iniciado", "Sixmanager", "23/04/26", "23/04/26", "0%", "0", "64"],
+    [66, 2, "Cierre formal de la Fase 1", "", "", "16/04/26", "29/04/26", "0%", "9d", ""],
+    [67, 3, "Documentación", "No iniciado", "Sixmanager", "16/04/26", "22/04/26", "0%", "4d", "58"],
+    [68, 3, "Pruebas Funcionales", "No iniciado", "Sixmanager, BCI", "22/04/26", "27/04/26", "0%", "3d", "67"],
+    [69, 3, "Reunión de entrega de documentación", "No iniciado", "Sixmanager, BCI", "27/04/26", "28/04/26", "0%", "1d", "68"],
+    [70, 3, "Soporte post implementación (evolutivo)", "No iniciado", "Sixmanager, BCI", "28/04/26", "29/04/26", "0%", "1d", "69"],
+    [71, 3, "Cierre Proyecto Etapa Preproducción", "No iniciado", "Sixmanager, BCI", "28/04/26", "28/04/26", "0%", "0", "69"]
+]
+
+# Crear el DataFrame
+data_rows = []
+for row in tasks:
+    id_val, level, name, status, assigned, start, end, progress, duration, pred = row
+    # Aplicar identación visual con espacios
+    indented_name = ("    " * level) + name
+    data_rows.append([id_val, indented_name, status, assigned, start, end, progress, duration, pred])
+
+df_full = pd.DataFrame(data_rows, columns=["ID", "Nombre de la Tarea", "Estado", "Asignado a", "Fecha Inicio", "Fecha Fin", "% Completo", "Duración", "Predecesores"])
+
+# Exportar a Excel
+df_full.to_excel("Gantt_Calypso_Completo.xlsx", index=False)
