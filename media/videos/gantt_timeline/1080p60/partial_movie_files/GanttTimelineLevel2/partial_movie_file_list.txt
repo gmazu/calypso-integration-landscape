@@ -1,9 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2257293077_4244305774_223132457.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_2108551468_3894336933.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_4224602324_664519880.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_3384358724_2732489914.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_491105979_2016563606.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_2243703327_1065820466.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_699068837_47855944.mp4'
-file 'file:/eVΛ/BCI/Calypso/CalypsoBCI/media/videos/gantt_timeline/1080p60/partial_movie_files/GanttTimelineLevel2/2135761390_4247107814_1560124590.mp4'
