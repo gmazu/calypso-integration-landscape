@@ -22,7 +22,7 @@ def load_tasks(path: str) -> list[list]:
 
 class GanttTimelineLevel2(Scene):
     def construct(self):
-        tasks = load_tasks("Gantt/smartsheet_PRE_v1.txt")
+        tasks = load_tasks("../Backup/smartsheet_PRE_v1.txt")
         level2 = [row for row in tasks if row[1] == 2]
 
         dated = []

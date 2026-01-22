@@ -1,0 +1,224 @@
+﻿ID,Nivel,Nombre de Tarea,Estado,Asignado,Inicio,Fin,Avance,Duración,Predecesores
+1,0,Hablitación Plataforma Calypso Banco BCI,En progreso,,06/01/26,29/04/26,8%,81.5d,
+2,1,Ambiente Pre Productivo,En progreso,,06/01/26,29/04/26,8%,81.5d,
+3,2,Kick off y requerimientos,Completo,,06/01/26,06/01/26,100%,1d,
+4,3,Inicio formal del proyecto (Kick Off),Completo,,06/01/26,06/01/26,100%,1d,
+5,3,Kickoff realizado,Completo,,06/01/26,06/01/26,100%,0,
+6,2,Habilitacion de infrastructura fisica (Pre requisitos),En progreso,,15/01/26,03/03/26,20%,34d,
+7,3,Solicitudes y formularios,En progreso,,15/01/26,26/01/26,40%,8d,
+8,3,Recepcion de servidores DELL,No se ha iniciado,,27/02/26,27/02/26,0%,1d,
+9,3,Direccionamiento IP / VLAN / PORT,No se ha iniciado,,23/02/26,23/02/26,0%,1d,
+10,3,Espacio en data center para nuevo HW (Ru's),No se ha iniciado,,24/02/26,24/02/26,0%,1d,
+11,3,Coordinacion de hardware a data center BCI,No se ha iniciado,,25/02/26,25/02/26,0%,1d,
+12,3,Gestión de accesos vpn a Servidores,No se ha iniciado,,26/02/26,26/02/26,0%,1d,
+13,3,Disponibilidad de puertas para conectividad,No se ha iniciado,,23/02/26,23/02/26,0%,1d,
+14,3,Rackeo y conecticvidad de equipos en Aconcagua (Encendido y sanity boot),No se ha iniciado,,02/03/26,02/03/26,0%,1d,8
+15,3,Rackeo y conecticvidad de equipos en Longovilo- 3er sitio (Encendido y sanity boot),No se ha iniciado,,03/03/26,03/03/26,0%,1d,14
+16,3,Infraestructura instalada,No se ha iniciado,,03/03/26,03/03/26,0%,0,15
+17,2,Plan de implementacion,En progreso,,26/01/26,16/04/26,2%,58.5d,
+18,3,Revisión y levantamiento de infraestructura actual,No se ha iniciado,,26/01/26,30/01/26,0%,5d,
+19,3,Diseño detallado de arquitectura preproductiva,No se ha iniciado,,02/02/26,06/02/26,0%,5d,
+20,3,Aprobación de diseño por parte del cliente,No se ha iniciado,,06/02/26,06/02/26,0%,0,19
+21,3,Prerrequisitos,En progreso,,02/02/26,17/03/26,4%,32d,
+22,4,Entrega documento prerrequisitos,En progreso,,02/02/26,02/02/26,50%,1d,
+23,4,Reglas de acceso (Permisos en firewall entre redes y hacia internet),No se ha iniciado,,04/03/26,06/03/26,0%,3d,16
+24,4,"Registros DNS requeridos (Subdominios, registros tipo A, Reversos)",No se ha iniciado,,09/03/26,11/03/26,0%,3d,23
+25,4,Accesos a servicios de red (Load Balancer / NTP),No se ha iniciado,,12/03/26,16/03/26,0%,3d,24
+26,4,Validación de Prerrequisitos,No se ha iniciado,,17/03/26,17/03/26,0%,1d,25
+27,4,Generación de certificados,No se ha iniciado,,11/03/26,13/03/26,0%,3d,
+28,4,Prerrequisitos entregados,No se ha iniciado,,17/03/26,17/03/26,0%,0,26
+29,3,Habilitación OLVM,No se ha iniciado,,18/03/26,26/03/26,0%,7d,
+30,4,Instalación de Hypervisor,No se ha iniciado,,18/03/26,19/03/26,0%,2d,28
+31,4,Configuración de Networking,No se ha iniciado,,20/03/26,20/03/26,0%,1d,30
+32,4,Integración con redes SAN,No se ha iniciado,,23/03/26,23/03/26,0%,1d,31
+33,4,Despliegue de HostedEngine,No se ha iniciado,,24/03/26,24/03/26,0%,1d,32
+34,4,Integración con redes del cliente,No se ha iniciado,,25/03/26,25/03/26,0%,1d,33
+35,4,"Creación de VMS utility Openshift  (Bastión, Bootstrap)",No se ha iniciado,,26/03/26,26/03/26,0%,1d,34
+36,4,Habilitación OLVM Finalizada,No se ha iniciado,,26/03/26,26/03/26,0%,0,35
+37,3,Habilitación Cluster Openshift Pre Productivo,No se ha iniciado,,27/03/26,10/04/26,0%,11d,
+38,4,Creación de Bootstrap,No se ha iniciado,,27/03/26,27/03/26,0%,1d,35
+39,4,Despliegue Openshift Bare Metal,No se ha iniciado,,30/03/26,03/04/26,0%,5d,38
+40,4,Configuraciones Post Instalación,No se ha iniciado,,06/04/26,07/04/26,0%,2d,39
+41,4,Integración con redes de cliente,No se ha iniciado,,08/04/26,08/04/26,0%,1d,40
+42,4,Habilitación de operador CSI,No se ha iniciado,,09/04/26,09/04/26,0%,1d,41
+43,4,Sesión de entrega,No se ha iniciado,,10/04/26,10/04/26,0%,1d,42
+44,4,Cluster Preproductivo instalado,No se ha iniciado,,10/04/26,10/04/26,0%,0,43
+45,3,Habilitación BBDD,No se ha iniciado,,24/03/26,30/03/26,0%,5d,
+46,4,Creación de máquinas virtuales BBDD,No se ha iniciado,,27/03/26,27/03/26,0%,1d,36
+47,4,Incorporación de LUNS para servidores BBDD,No se ha iniciado,,24/03/26,24/03/26,0%,1d,32
+48,4,Instalación y configuración Base de datos Oracle,No se ha iniciado,,25/03/26,27/03/26,0%,3d,47
+49,4,Sesión de entrega,No se ha iniciado,,30/03/26,30/03/26,0%,1d,48
+50,4,Habilitación BD Finalizada,No se ha iniciado,,30/03/26,30/03/26,0%,0,49
+51,3,Despliegue y migracion de aplicaciones en DEV/UAT/INT,No se ha iniciado,,13/04/26,16/04/26,0%,3.5d,
+52,4,Reunion de migracion,No se ha iniciado,,13/04/26,13/04/26,0%,0.5d,44
+53,4,Revisión de prerrequisitos,No se ha iniciado,,13/04/26,13/04/26,0%,0.5d,52
+54,4,Descarga de imagenes base,No se ha iniciado,,15/04/26,15/04/26,0%,1d,63
+55,4,Migracion de archivos YAML,No se ha iniciado,,13/04/26,14/04/26,0%,1d,52
+56,4,Migracion de base de datos,No se ha iniciado,,14/04/26,15/04/26,0%,1d,55
+57,4,Pruebas de aplicación,No se ha iniciado,,15/04/26,16/04/26,0%,1d,56
+58,4,Fin despliegue aplicación,No se ha iniciado,,16/04/26,16/04/26,0%,0,57
+59,2,Integración de componentes,No se ha iniciado,,13/04/26,24/04/26,0%,9.5d,
+60,3,Integración de OCP con Storage vía CSI,No se ha iniciado,,13/04/26,13/04/26,0%,1d,44
+61,3,Integración con Observabilidad y monitoreo de cliente (Nagios - Dynatrace),No se ha iniciado,,16/04/26,23/04/26,0%,5d,58
+62,3,Integración Active Directory,No se ha iniciado,,23/04/26,24/04/26,0%,1d,61
+63,3,Despliegue de aplicaciones en GIT,No se ha iniciado,,14/04/26,14/04/26,0%,1d,53
+64,3,Integración con Respaldos de cliente,No se ha iniciado,,16/04/26,23/04/26,0%,5d,58
+65,3,Fin Etapa integración,No se ha iniciado,,23/04/26,23/04/26,0%,0,64
+66,2,Cierre formal de la Fase 1,No se ha iniciado,,16/04/26,29/04/26,0%,9d,
+67,3,Documentación,No se ha iniciado,,16/04/26,22/04/26,0%,4d,58
+68,3,Pruebas Funcionales,No se ha iniciado,,22/04/26,27/04/26,0%,3d,67
+69,3,Reunión de entrega de documentación y presentación de la solución,No se ha iniciado,,27/04/26,28/04/26,0%,1d,68
+70,3,Soporte post implementación (evolutivo),No se ha iniciado,,28/04/26,29/04/26,0%,1d,69
+71,3,Cierre Proyecto Etapa Preproducción,No se ha iniciado,,28/04/26,28/04/26,0%,0,69
+72,1,Ambiente Productivo / DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+73,2,Habilitacion de infrastructura fisica (Pre requisitos),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+74,3,Datacenter Aconcagua,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+75,4,Direccionamiento IP / VLAN / PORT,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+76,4,Gestión de accesos al datacenter (para conectividad de red de equipos),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+77,4,Espacio en data center para nuevo HW (Ru's),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+78,4,Arribo de servidores DELL Producción,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+79,4,Ingreso hardware a data center BCI,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+80,4,Disponibilidad de puertas para conectividad,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+81,4,Rackeo y conecticvidad de equipos en Aconcagua (Encendido y sanity boot),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+82,3,Datacenter Longovilo,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+83,4,Direccionamiento IP / VLAN / PORT,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+84,4,Gestión de accesos al datacenter (para ingreso de equipos),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+85,4,Espacio en data center para nuevo HW (Ru's),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+86,4,Arribo de servidores DELL DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+87,4,Ingreso hardware a data center BCI,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+88,4,Disponibilidad de puertas para conectividad,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+89,4,Rackeo y conecticvidad de equipos en Longovilo(Encendido y sanity boot),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+90,3,Infraestructura instalada,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+91,2,Plan de implementacion,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+92,3,Revisión y levantamiento de infraestructura actual,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+93,3,Diseño detallado de arquitectura preproductiva,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+94,3,Aprobación de diseño por parte del cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+95,3,Prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+96,4,Prerrequisitos Producción,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+97,5,Entrega documento prerrequisitos Producción,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+98,5,Reglas de acceso (Permisos en firewall entre redes y hacia internet),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+99,5,"Registros DNS requeridos (Subdominios, registros tipo A, Reversos)",No se ha iniciado,,06/01/26,06/01/26,0%,0,
+100,5,Generación de certificados,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+101,5,Accesos a servicios de red (Load Balancer / NTP),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+102,5,Validación de Prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+103,4,Prerrequisitos DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+104,5,Entrega documento prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+105,5,Reglas de acceso (Permisos en firewall entre redes y hacia internet),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+106,5,"Registros DNS requeridos (Subdominios, registros tipo A, Reversos)",No se ha iniciado,,06/01/26,06/01/26,0%,0,
+107,5,Generación de certificados,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+108,5,Accesos a servicios de red (Load Balancer / NTP),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+109,5,Validación de Prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+110,4,Prerrequisitos entregados,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+111,4,Integración Storage Datacenter Aconcagua,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+112,5,Zonificación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+113,5,Envío de prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+114,5,Publicación de LUN para OLVM,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+115,5,Publicación de LUNS para BBDD Productiva,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+116,5,Creación de accesos para driver CSI y publicación de volumen,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+117,5,Pruebas de conectividad hacia storage,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+118,5,Integración Storage Aconcagua finalizada,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+119,4,Integración Storage Datacenter Longovilo,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+120,5,Zonificación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+121,5,Envío de prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+122,5,Publicación de LUN para OLVM,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+123,5,Publicación de LUNS para BBDD Productiva,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+124,5,Creación de accesos para driver CSI y publicación de volumen,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+125,5,Pruebas de conectividad hacia storage,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+126,5,Integración Storage Longovilo finalizada,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+127,3,Habilitación Cluster Openshift Productivo,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+128,4,Despliegue Openshift Bare Metal,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+129,4,Configuraciones Post Instalación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+130,4,Integración con redes de cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+131,4,Habilitación de operador CSI,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+132,4,Pruebas Funcionales,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+133,4,Sesión de entrega,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+134,4,Cluster Preproductivo instalado,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+135,3,Habilitación OLVM y BD Producción,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+136,3,Instalación OLVM,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+137,4,Habilitación Servidores B.D.,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+138,4,Habilitación y configuración Base de datos Oracle Rac,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+139,4,Configuración Dataguard,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+140,4,Integración con redes del cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+141,4,Pruebas funcionales HA,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+142,4,Creación de Esquemas de BD,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+143,4,Sesión de entrega,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+144,4,Habilitación OLVM y BD Finalizada,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+145,3,Habilitación Cluster Openshift DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+146,4,Despliegue Openshift Bare Metal,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+147,4,Configuraciones Post Instalación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+148,4,Integración con redes de cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+149,4,Habilitación de operador CSI,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+150,4,Pruebas Funcionales,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+151,4,Sesión de entrega,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+152,4,Cluster Preproductivo instalado,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+153,3,Habilitación OLVM y BD DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+154,4,Instalación OLVM,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+155,4,Habilitación Servidores B.D.,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+156,4,Habilitación y configuración Base de datos Oracle Rac,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+157,4,Configuración Dataguard,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+158,4,Integración con redes del cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+159,4,Pruebas funcionales HA,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+160,4,Creación de Esquemas de BD,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+161,4,Sesión de entrega,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+162,4,Habilitación OLVM y BD Finalizada,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+163,2,Plan de pruebas Replicación de LUNS,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+164,3,Reunión de definiciones,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+165,3,Pruebas de replica y restauración de LUNS,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+166,2,Integración de componentes,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+167,3,Integración de OCP con B.D.,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+168,3,Integración de OCP con Storage vía CSI,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+169,3,Integración de OLVM con Storage,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+170,3,Integración con Observabilidad y monitoreo de cliente (Nagios - Dynatrace),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+171,3,Integración Active Directory,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+172,3,Integración con repositorio Git,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+173,3,Integración con Respaldos de cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+174,3,Fin Etapa integración,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+175,3,Despliegue de aplicaciones Producción / DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+176,4,Revisión de prerrequisitos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+177,4,Definicion de rutas productivas (*),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+178,4,Despliegue de aplicaciones en GIT,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+179,4,Construcción de imagen y compilación de aplicación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+180,4,Carga de imagen a registry,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+181,4,Creación de archivos deployment,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+182,4,Creación de variables de ambientes por módulos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+183,4,Crear PV para cada aplicación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+184,4,Crear PVC para cada aplicación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+185,4,Subida de aplicación y pruebas de conectividad,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+186,4,Creación de rutas de Servicios,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+187,4,Creación de rutas externas,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+188,4,Pruebas de aplicación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+189,4,Fin despliegue aplicación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+190,1,Cierre formal de la Fase Producción,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+191,1,Reunión de entrega de documentación y presentación de la solución,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+192,2,Paso a Producción,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+193,3,Preparación de ambientes DEV para Operación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+194,4,Integración con Observabilidad y monitoreo de cliente (Nagios - Dynatrace),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+195,4,Integración con repositorio Git,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+196,4,Integración Active Directory,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+197,4,Integración con Respaldos de cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+198,4,Generación de certificados (No mandatorio para la instalación),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+199,4,Monitoreo del Cluster,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+200,4,Cluster DEV listo para operación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+201,3,Preparación de ambientes PROD para Operación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+202,4,Integración con Observabilidad y monitoreo de cliente (Nagios - Dynatrace),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+203,4,Integración Active Directory,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+204,4,Integración con Respaldos de cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+205,4,Generación de certificados (No mandatorio para la instalación),No se ha iniciado,,06/01/26,06/01/26,0%,0,
+206,4,Monitoreo del Cluster,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+207,4,Cluster Producción listo para operación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+208,4,Incorporación a sistema de monitoreo Sixmanager,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+209,4,Traspaso a área de Administración,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+210,4,Plan de DR,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+211,4,Definición de SLA y condiciones,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+212,4,Construcción de procedimientos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+213,4,Openshift,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+214,4,Bases de Datos,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+215,4,Hypervisor,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+216,4,Calypso,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+217,4,Incorporación a sistema de tickets,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+218,4,Puesta en marcha Cluster ACM,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+219,4,Despliegue Openshift Bare Metal,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+220,4,Configuraciones Post Instalación,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+221,4,Integración con redes de cliente,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+222,4,Pruebas Funcionales,No se ha iniciado,,06/01/26,06/01/26,0%,0,
+223,4,Sesión de entrega,No se ha iniciado,,06/01/26,06/01/26,0%,0,
