@@ -5,12 +5,47 @@ import ast
 from pathlib import Path
 from collections import OrderedDict
 import textwrap
+import argparse
+import sys
+import os
 
 from manim import *
+from openpyxl import load_workbook
 
 
-def load_tasks(path: str) -> list[list]:
-    text = Path(path).read_text(encoding="utf-8")
+DEFAULT_TASK_FILE = "Gantt/smartsheet_PRE_v1.txt"
+
+
+def format_date(value) -> str:
+    if isinstance(value, datetime):
+        return value.strftime("%d/%m/%y")
+    if value is None:
+        return ""
+    text = str(value).strip()
+    if not text:
+        return ""
+    for fmt in ("%d/%m/%y", "%d/%m/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text, fmt).strftime("%d/%m/%y")
+        except ValueError:
+            continue
+    return text
+
+
+def format_percent(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (int, float)):
+        pct = value * 100 if 0 <= value <= 1 else value
+        return f"{int(round(pct))}%"
+    text = str(value).strip()
+    if not text:
+        return ""
+    return text if "%" in text else f"{text}%"
+
+
+def load_tasks_from_txt(path: Path) -> list[list]:
+    text = path.read_text(encoding="utf-8")
     module = ast.parse(text)
     for node in module.body:
         if isinstance(node, ast.Assign):
@@ -20,9 +55,96 @@ def load_tasks(path: str) -> list[list]:
     raise ValueError("tasks list not found")
 
 
+def load_tasks_from_xlsx(path: Path) -> list[list]:
+    wb = load_workbook(path, read_only=False, data_only=True)
+    ws = wb[wb.sheetnames[0]]
+
+    header_row = next(ws.iter_rows(min_row=1, max_row=1))
+    headers = [cell.value for cell in header_row]
+    header_map = {str(val).strip().lower(): idx for idx, val in enumerate(headers, start=1) if val}
+
+    def col_index(*names: str) -> int | None:
+        for name in names:
+            key = name.strip().lower()
+            if key in header_map:
+                return header_map[key]
+        return None
+
+    col_id = col_index("id", "uid", "uid ")
+    col_name = col_index("nombre de la tarea", "nombre", "task name", "name")
+    col_status = col_index("estado", "status")
+    col_assigned = col_index("asignado a", "asignado", "assigned")
+    col_start = col_index("fecha de inicio", "inicio", "start", "start date")
+    col_end = col_index("fecha de finalización", "fecha de finalizacion", "fin", "finish", "end", "end date")
+    col_pct = col_index("porcentaje completo", "% completo", "avance", "percent complete", "percentcomplete")
+    col_duration = col_index("duración", "duracion", "duration")
+    col_pred = col_index("predecesores", "predecessors", "pred")
+
+    if not col_name:
+        raise ValueError("No se encontro la columna 'Nombre de la tarea' en el XLSX.")
+
+    tasks = []
+    for row_idx in range(2, ws.max_row + 1):
+        name_cell = ws.cell(row=row_idx, column=col_name)
+        name_val = name_cell.value
+        if name_val is None or str(name_val).strip() == "":
+            continue
+
+        indent = name_cell.alignment.indent or 0
+        level = int(indent)
+
+        task_id = ws.cell(row=row_idx, column=col_id).value if col_id else row_idx - 1
+        status = ws.cell(row=row_idx, column=col_status).value if col_status else ""
+        assigned = ws.cell(row=row_idx, column=col_assigned).value if col_assigned else ""
+        start = ws.cell(row=row_idx, column=col_start).value if col_start else ""
+        end = ws.cell(row=row_idx, column=col_end).value if col_end else ""
+        pct = ws.cell(row=row_idx, column=col_pct).value if col_pct else ""
+        duration = ws.cell(row=row_idx, column=col_duration).value if col_duration else ""
+        pred = ws.cell(row=row_idx, column=col_pred).value if col_pred else ""
+
+        tasks.append(
+            [
+                task_id,
+                level,
+                str(name_val).strip(),
+                str(status).strip() if status is not None else "",
+                str(assigned).strip() if assigned is not None else "",
+                format_date(start),
+                format_date(end),
+                format_percent(pct),
+                str(duration).strip() if duration is not None else "",
+                str(pred).strip() if pred is not None else "",
+            ]
+        )
+
+    return tasks
+
+
+def load_tasks(path: str) -> list[list]:
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"No existe el archivo: {p}")
+
+    if p.suffix.lower() in {".xlsx", ".xls"}:
+        return load_tasks_from_xlsx(p)
+    return load_tasks_from_txt(p)
+
+
+# We need to parse our arguments before Manim does.
+parser = argparse.ArgumentParser(description="Gantt chart timeline generator for Manim.")
+parser.add_argument(
+    "-xlsx",
+    "--xlsx",
+    dest="source",
+    help="Path to the tasks data file (XLSX/TXT). If not specified, uses default.",
+)
+custom_args, _ = parser.parse_known_args()
+
+
 class GanttTimelineLevel2(Scene):
     def construct(self):
-        tasks = load_tasks("../Backup/smartsheet_PRE_v1.txt")
+        source_path = custom_args.source or os.environ.get("GANTT_SOURCE") or DEFAULT_TASK_FILE
+        tasks = load_tasks(source_path)
         level2 = [row for row in tasks if row[1] == 2]
 
         dated = []
@@ -145,7 +267,8 @@ class GanttTimelineLevel2(Scene):
 
 class GanttTimelineCircular(ThreeDScene):
     def construct(self):
-        tasks = load_tasks("Gantt/smartsheet_PRE_v1.txt")
+        source_path = custom_args.source or os.environ.get("GANTT_SOURCE") or DEFAULT_TASK_FILE
+        tasks = load_tasks(source_path)
         level2 = [row for row in tasks if row[1] == 2]
 
         dated = []
