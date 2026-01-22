@@ -1,30 +1,179 @@
 from __future__ import annotations
 
-from datetime import datetime
+import argparse
 import ast
-import sys
+from datetime import datetime
 from collections import OrderedDict
 import textwrap
+import sys
+from pathlib import Path
 
 from manim import *
+from openpyxl import load_workbook
 
 
-def load_tasks_from_stdin() -> list[list]:
-    text = sys.stdin.read()
-    if not text.strip():
-        raise ValueError("No se recibieron datos por stdin.")
+def format_date(value) -> str:
+    if isinstance(value, datetime):
+        return value.strftime("%d/%m/%y")
+    if value is None:
+        return ""
+    text = str(value).strip()
+    if not text:
+        return ""
+    for fmt in ("%d/%m/%y", "%d/%m/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text, fmt).strftime("%d/%m/%y")
+        except ValueError:
+            continue
+    return text
+
+
+def format_percent(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (int, float)):
+        pct = value * 100 if 0 <= value <= 1 else value
+        return f"{int(round(pct))}%"
+    text = str(value).strip()
+    if not text:
+        return ""
+    return text if "%" in text else f"{text}%"
+
+
+def load_tasks_from_xlsx(path: Path) -> list[list]:
+    wb = load_workbook(path, read_only=False, data_only=True)
+    ws = wb[wb.sheetnames[0]]
+
+    header_row = next(ws.iter_rows(min_row=1, max_row=1))
+    headers = [cell.value for cell in header_row]
+    header_map = {str(val).strip().lower(): idx for idx, val in enumerate(headers, start=1) if val}
+
+    def col_index(*names: str) -> int | None:
+        for name in names:
+            key = name.strip().lower()
+            if key in header_map:
+                return header_map[key]
+        return None
+
+    col_id = col_index("id", "uid", "uid ")
+    col_name = col_index("nombre de la tarea", "nombre", "task name", "name")
+    col_status = col_index("estado", "status")
+    col_assigned = col_index("asignado a", "asignado", "assigned")
+    col_start = col_index("fecha de inicio", "inicio", "start", "start date")
+    col_end = col_index("fecha de finalización", "fecha de finalizacion", "fin", "finish", "end", "end date")
+    col_pct = col_index("porcentaje completo", "% completo", "avance", "percent complete", "percentcomplete")
+    col_duration = col_index("duración", "duracion", "duration")
+    col_pred = col_index("predecesores", "predecessors", "pred")
+
+    if not col_name:
+        raise ValueError("No se encontro la columna 'Nombre de la tarea' en el XLSX.")
+
+    tasks = []
+    for row_idx in range(2, ws.max_row + 1):
+        name_cell = ws.cell(row=row_idx, column=col_name)
+        name_val = name_cell.value
+        if name_val is None or str(name_val).strip() == "":
+            continue
+
+        indent = name_cell.alignment.indent or 0
+        level = int(indent)
+
+        task_id = ws.cell(row=row_idx, column=col_id).value if col_id else row_idx - 1
+        status = ws.cell(row=row_idx, column=col_status).value if col_status else ""
+        assigned = ws.cell(row=row_idx, column=col_assigned).value if col_assigned else ""
+        start = ws.cell(row=row_idx, column=col_start).value if col_start else ""
+        end = ws.cell(row=row_idx, column=col_end).value if col_end else ""
+        pct = ws.cell(row=row_idx, column=col_pct).value if col_pct else ""
+        duration = ws.cell(row=row_idx, column=col_duration).value if col_duration else ""
+        pred = ws.cell(row=row_idx, column=col_pred).value if col_pred else ""
+
+        if isinstance(task_id, float) and task_id.is_integer():
+            task_id = int(task_id)
+
+        tasks.append(
+            [
+                task_id,
+                level,
+                str(name_val).strip(),
+                str(status).strip() if status is not None else "",
+                str(assigned).strip() if assigned is not None else "",
+                format_date(start),
+                format_date(end),
+                format_percent(pct),
+                str(duration).strip() if duration is not None else "",
+                str(pred).strip() if pred is not None else "",
+            ]
+        )
+
+    return tasks
+
+
+def filter_by_level(tasks: list[list], level: int) -> list[list]:
+    target_level = level + 1
+    return [row for row in tasks if row[1] == target_level]
+
+
+def write_tasks_file(tasks: list[list], output_path: Path) -> None:
+    with output_path.open("w", encoding="utf-8") as f:
+        f.write("tasks = [\n")
+        for row in tasks:
+            f.write(f"    {row},\n")
+        f.write("]\n")
+
+
+def run_filter_cli(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="Genera filter_gantt.tasks desde XLSX.")
+    parser.add_argument("-xlsx", "--xlsx", required=True, help="Ruta al archivo XLSX.")
+    parser.add_argument("--nivel", type=int, required=True, help="Nivel base (muestra nivel + 1).")
+    parser.add_argument(
+        "-o",
+        "--output",
+        default=Path(__file__).with_name("filter_gantt.tasks"),
+        help="Archivo de salida (default: filter_gantt.tasks).",
+    )
+    args = parser.parse_args(argv)
+
+    xlsx_path = Path(args.xlsx)
+    if not xlsx_path.exists():
+        print(f"Error: no existe el archivo {xlsx_path}", file=sys.stderr)
+        return 1
+
+    tasks_all = load_tasks_from_xlsx(xlsx_path)
+    filtered = filter_by_level(tasks_all, args.nivel)
+    write_tasks_file(filtered, Path(args.output))
+    print(f"Escrito: {args.output}")
+    return 0
+
+
+def load_tasks_from_file(path: Path) -> list[list]:
+    text = path.read_text(encoding="utf-8").lstrip()
     module = ast.parse(text)
     for node in module.body:
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 if isinstance(target, ast.Name) and target.id == "tasks":
                     return ast.literal_eval(node.value)
-    raise ValueError("tasks list not found in stdin")
+    raise ValueError("tasks list not found in file")
+
+
+parser = argparse.ArgumentParser(description="Gantt chart timeline generator for Manim (v2).")
+parser.add_argument(
+    "-f",
+    "--file",
+    default=Path(__file__).with_name("filter_gantt.tasks"),
+    help="Ruta al archivo con 'tasks = [...]' (default: filter_gantt.tasks).",
+)
+custom_args, _ = parser.parse_known_args()
+
+if __name__ == "__main__":
+    raise SystemExit(run_filter_cli(sys.argv[1:]))
+
+# manim -pql gantt_timeline_v2.py GanttTimelineLevel2
 
 
 class GanttTimelineLevel2(Scene):
     def construct(self):
-        tasks = load_tasks_from_stdin()
+        tasks = load_tasks_from_file(Path(custom_args.file))
         level2 = tasks
 
         dated = []
@@ -147,7 +296,7 @@ class GanttTimelineLevel2(Scene):
 
 class GanttTimelineCircular(ThreeDScene):
     def construct(self):
-        tasks = load_tasks_from_stdin()
+        tasks = load_tasks_from_file(Path(custom_args.file))
         level2 = tasks
 
         dated = []
