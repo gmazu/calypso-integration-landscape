@@ -410,6 +410,8 @@ class GanttTimelineLevel2(Scene):
             ratio = offset / total
             return interpolate(timeline_left[0], timeline_right[0], ratio)
 
+        scale_y = timeline_left[1] - 3.2
+
         # Fecha de hoy
         today = datetime.now()
 
@@ -437,30 +439,44 @@ class GanttTimelineLevel2(Scene):
             planned_all.append(planned)
         avg_planned = round(sum(planned_all) / len(planned_all)) if planned_all else None
 
-        # Línea de "hoy" sobre la escala inferior
-        if start_min <= today <= end_max:
-            x_today = date_to_x(today)
-            today_line = Line(
-                [x_today, timeline_left[1] - 3.2, 0],
-                [x_today, timeline_left[1] - 2.9, 0],
-                color=RED,
-                stroke_width=1,
-            )
-            today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=10, color=RED)
-            today_label.next_to(today_line, UP, buff=0.04)
-            pct_parts = []
-            if avg_all is not None:
-                pct_parts.append(f"Real {avg_all}%")
-            if avg_planned is not None:
-                pct_parts.append(f"Plan {avg_planned}%")
-            if pct_parts:
-                today_pct = Text(" | ".join(pct_parts), font_size=10, color=RED)
-                today_pct.next_to(today_label, RIGHT, buff=0.15)
-            else:
-                today_pct = None
+        # Línea de "hoy" sobre la escala inferior (sin clamp)
+        total_days = (end_max - start_min).days or 1
+        ratio = (today - start_min).days / total_days
+        x_today = interpolate(timeline_left[0], timeline_right[0], ratio)
+        # Dial vintage: barras paralelas para real vs plan (más separación si difieren)
+        dial_height = 0.55
+        dial_w = 0.08
+        plan_val = avg_planned if avg_planned is not None else 0
+        real_val = avg_all if avg_all is not None else 0
+        diff = abs((real_val or 0) - (plan_val or 0))
+        dial_gap = 0.02 + 0.0015 * diff
+        dial_gap = min(0.22, dial_gap)
+        dial_real = Rectangle(
+            width=dial_w,
+            height=dial_height,
+            stroke_width=0,
+            fill_color=RED_E,
+            fill_opacity=0.35,
+        ).move_to([x_today - dial_gap / 2, scale_y + dial_height / 2, 0])
+        dial_plan = Rectangle(
+            width=dial_w,
+            height=dial_height,
+            stroke_width=0,
+            fill_color=RED_A,
+            fill_opacity=0.35,
+        ).move_to([x_today + dial_gap / 2, scale_y + dial_height / 2, 0])
+        today_line = VGroup(dial_real, dial_plan)
+        today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=10, color=RED)
+        today_label.next_to(today_line, UP, buff=0.04)
+        pct_parts = []
+        if avg_all is not None:
+            pct_parts.append(f"Real {avg_all}%")
+        if avg_planned is not None:
+            pct_parts.append(f"Plan {avg_planned}%")
+        if pct_parts:
+            today_pct = Text(" | ".join(pct_parts), font_size=10, color=RED)
+            today_pct.next_to(today_label, RIGHT, buff=0.15)
         else:
-            today_line = None
-            today_label = None
             today_pct = None
 
         points = VGroup()
@@ -498,20 +514,21 @@ class GanttTimelineLevel2(Scene):
             date_label.next_to(point, DOWN if above else UP, buff=0.1)
 
             offsets = [1.0, 1.5, 2.0] if len(tasks_for_date) > 1 else [stem_len + 0.2]
+            x_offsets = [0.45, -0.45, 0.9, -0.9, 1.35, -1.35]
             for t_idx, task in enumerate(tasks_for_date):
                 offset = offsets[t_idx] if t_idx < len(offsets) else offsets[-1]
                 target_y = y + (offset if above else -offset)
 
-                title_text = Text(f"ID {task['id']}", font_size=12, weight=BOLD)
-                wrapped_name = textwrap.fill(task["name"], width=28)
-                body = Text(wrapped_name, font_size=12, color=GRAY_B, line_spacing=0.9)
-                end_line = f"Fin: {task['end_str']}"
+                id_line = f"ID {task['id']}"
                 if task.get("pct"):
-                    end_line = f"{end_line}  {task['pct']}"
-                end_text = Text(end_line, font_size=11, color=GRAY_C)
-                text_block = VGroup(title_text, body, end_text).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
+                    id_line = f"{id_line}  {task['pct']}"
+                title_text = Text(id_line, font_size=12, weight=BOLD)
+                end_text = Text(f"Fin: {task['end_str']}", font_size=11, color=GRAY_C)
+                text_block = VGroup(title_text, end_text).arrange(DOWN, buff=0.06, aligned_edge=LEFT)
 
                 text_block.move_to([x, target_y, 0])
+                x_shift = x_offsets[t_idx] if t_idx < len(x_offsets) else x_offsets[-1]
+                text_block.shift(RIGHT * x_shift)
                 if target_y >= y:
                     text_block.shift(UP * 0.35)
                 else:
@@ -540,24 +557,81 @@ class GanttTimelineLevel2(Scene):
                     fill = None
                 else:
                     pct_norm = max(0.0, min(1.0, pct_val / 100.0))
-                    fill_h = bar_height * pct_norm
-                    fill = Rectangle(
-                        width=bar_width * 0.75,
-                        height=fill_h,
+                    seg_count = 12
+                    lit_segments = int(round(pct_norm * seg_count))
+                    if pct_norm > 0 and lit_segments == 0:
+                        lit_segments = 1
+                    gap_ratio = 0.25
+                    seg_height = bar_height / (seg_count + (seg_count - 1) * gap_ratio)
+                    seg_gap = seg_height * gap_ratio
+                    fill = VGroup()
+                    # Halo suave detrás
+                    halo = Rectangle(
+                        width=bar_width * 0.95,
+                        height=bar_height,
                         stroke_width=0,
-                    )
-                    fill.set_fill(color=[GREEN_E, YELLOW_B], opacity=0.9)
-                    if target_y >= y:
-                        fill.move_to([x, y + fill_h / 2, 0])
-                    else:
-                        fill.move_to([x, y - fill_h / 2, 0])
+                        fill_color=GREEN_E,
+                        fill_opacity=0.08,
+                    ).move_to([x, bar_center, 0])
+                    fill.add(halo)
+                    for s in range(lit_segments):
+                        # Más brillante hacia la punta
+                        t = s / max(1, seg_count - 1)
+                        color = interpolate_color(GREEN_E, YELLOW_B, t)
+                        seg = Rectangle(
+                            width=bar_width * 0.75,
+                            height=seg_height,
+                            stroke_width=0,
+                            fill_color=color,
+                            fill_opacity=0.95,
+                        )
+                        if target_y >= y:
+                            seg_y = y + (seg_height / 2) + s * (seg_height + seg_gap)
+                        else:
+                            seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
+                        seg.move_to([x, seg_y, 0])
+                        fill.add(seg)
+                    # Cap para 100%: asegura que llegue al borde
+                    if pct_norm >= 0.999:
+                        cap_h = seg_height * 0.6
+                        cap = Rectangle(
+                            width=bar_width * 0.75,
+                            height=cap_h,
+                            stroke_width=0,
+                            fill_color=YELLOW_B,
+                            fill_opacity=0.95,
+                        )
+                        if target_y >= y:
+                            cap.move_to([x, y + bar_height - cap_h / 2, 0])
+                        else:
+                            cap.move_to([x, y - bar_height + cap_h / 2, 0])
+                        fill.add(cap)
 
                 stems.add(outline)
                 if fill:
                     stems.add(fill)
 
+            # Marcas de escala (0-100) junto a la barra (solo una vez por fecha)
+            scale_marks = VGroup()
+            ticks = [0, 25, 50, 75, 100]
+            for t in ticks:
+                frac = t / 100.0
+                tick_len = 0.16 if t in (0, 50, 100) else 0.08
+                if above:
+                    ty = y + frac * stem_len
+                else:
+                    ty = y - frac * stem_len
+                scale_marks.add(
+                    Line([x - 0.18, ty, 0], [x - 0.18 - tick_len, ty, 0], color=GRAY_C, stroke_width=1)
+                )
+                if t in (0, 50, 100):
+                    lbl = Text(str(t), font_size=9, color=GRAY_C)
+                    lbl.next_to(scale_marks[-1], LEFT, buff=0.04)
+                    scale_marks.add(lbl)
+
             points.add(point)
             dates.add(date_label)
+            stems.add(scale_marks)
 
             pcts = []
             for t in tasks_for_date:
@@ -570,7 +644,6 @@ class GanttTimelineLevel2(Scene):
                 pct_by_date[key] = round(sum(pcts) / len(pcts))
 
         # Escala inferior estilo "mapa": barra segmentada con dias por tramo
-        scale_y = timeline_left[1] - 3.2
         bar_height = 0.15
         bar = VGroup()
         for i in range(1, len(date_keys)):
@@ -593,12 +666,12 @@ class GanttTimelineLevel2(Scene):
             bar.add(seg)
 
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
-            txt = Text(f"{delta_days}d", font_size=10, color=GRAY_B)
+            txt = Text(f"{delta_days}d", font_size=9, color=GRAY_B)
             txt.next_to(seg, DOWN, buff=0.06)
             if d1 in pct_by_date:
-                avg_txt = Text(f"Prom {pct_by_date[d1]}%", font_size=9, color=GREEN_C)
-                avg_txt.next_to(txt, DOWN, buff=0.04)
-                deltas.add(VGroup(tick, txt, avg_txt))
+                avg_txt = Text(f"Prom {pct_by_date[d1]}%", font_size=10, color=GREEN_C)
+                avg_txt.next_to(seg, UP, buff=0.05)
+                deltas.add(VGroup(tick, avg_txt, txt))
             else:
                 deltas.add(VGroup(tick, txt))
 
@@ -619,18 +692,45 @@ class GanttTimelineLevel2(Scene):
 
         self.play(Write(header), run_time=1)
         self.play(Create(timeline), run_time=0.8)
+        today_group = None
         if today_line:
-            anims = [FadeIn(today_line), FadeIn(today_label)]
             if today_pct:
-                anims.append(FadeIn(today_pct))
-            self.play(*anims, run_time=0.4)
+                today_group = VGroup(today_line, today_label, today_pct)
+            else:
+                today_group = VGroup(today_line, today_label)
+            # Posicionar al inicio de la línea de tiempo para animación final
+            start_x = timeline_left[0] - 0.8
+            cur_x = today_group.get_center()[0]
+            today_group.shift([start_x - cur_x, 0, 0])
+            today_group.set_opacity(0)
+            self.add(today_group)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
-        self.play(LaggedStartMap(Create, stems, lag_ratio=0.05), run_time=1.0)
+        self.play(LaggedStartMap(FadeIn, stems, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
         self.play(LaggedStartMap(FadeIn, labels, lag_ratio=0.05), run_time=1.2)
         if deltas:
             self.play(FadeIn(bar), run_time=0.4)
             self.play(LaggedStartMap(FadeIn, deltas, lag_ratio=0.03), run_time=0.6)
+
+        # Animación de "hoy" al final con rebote
+        if today_group:
+            width = timeline_right[0] - timeline_left[0]
+            overshoot = 0.08 * width
+            targets = [
+                x_today + overshoot,
+                x_today - overshoot * 0.6,
+                x_today + overshoot * 0.3,
+                x_today,
+            ]
+            # Primera llegada desde la izquierda con fade-in
+            first_dx = targets[0] - today_group.get_center()[0]
+            self.play(
+                today_group.animate.shift([first_dx, 0, 0]).set_opacity(1),
+                run_time=0.35,
+            )
+            for tx in targets[1:]:
+                dx = tx - today_group.get_center()[0]
+                self.play(today_group.animate.shift([dx, 0, 0]), run_time=0.25)
 
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
