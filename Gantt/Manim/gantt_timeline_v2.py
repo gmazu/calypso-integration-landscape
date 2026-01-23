@@ -410,7 +410,10 @@ class GanttTimelineLevel2(Scene):
             ratio = offset / total
             return interpolate(timeline_left[0], timeline_right[0], ratio)
 
-        # Promedio global de avance para etiqueta en "hoy"
+        # Fecha de hoy
+        today = datetime.now()
+
+        # Promedio global de avance real y planificado para marcador de "hoy"
         pct_all = []
         for t in dated:
             if t.get("pct"):
@@ -419,22 +422,40 @@ class GanttTimelineLevel2(Scene):
                 except ValueError:
                     pass
         avg_all = round(sum(pct_all) / len(pct_all)) if pct_all else None
+        planned_all = []
+        for t in dated:
+            start_d = t["start"]
+            end_d = t["end"]
+            total_days = max(1, (end_d - start_d).days)
+            if today <= start_d:
+                planned = 0.0
+            elif today >= end_d:
+                planned = 100.0
+            else:
+                elapsed = (today - start_d).days
+                planned = (elapsed / total_days) * 100.0
+            planned_all.append(planned)
+        avg_planned = round(sum(planned_all) / len(planned_all)) if planned_all else None
 
-        # Línea de "hoy"
-        today = datetime.now()
+        # Línea de "hoy" sobre la escala inferior
         if start_min <= today <= end_max:
             x_today = date_to_x(today)
             today_line = Line(
                 [x_today, timeline_left[1] - 3.2, 0],
-                [x_today, timeline_left[1] - 2.6, 0],
+                [x_today, timeline_left[1] - 2.9, 0],
                 color=RED,
                 stroke_width=1,
             )
-            today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=11, color=RED)
-            today_label.next_to(today_line, UP, buff=0.05)
+            today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=10, color=RED)
+            today_label.next_to(today_line, UP, buff=0.04)
+            pct_parts = []
             if avg_all is not None:
-                today_pct = Text(f"Prom {avg_all}%", font_size=10, color=RED_E)
-                today_pct.next_to(today_line, DOWN, buff=0.04)
+                pct_parts.append(f"Real {avg_all}%")
+            if avg_planned is not None:
+                pct_parts.append(f"Plan {avg_planned}%")
+            if pct_parts:
+                today_pct = Text(" | ".join(pct_parts), font_size=10, color=RED)
+                today_pct.next_to(today_label, RIGHT, buff=0.15)
             else:
                 today_pct = None
         else:
@@ -524,9 +545,8 @@ class GanttTimelineLevel2(Scene):
                         width=bar_width * 0.75,
                         height=fill_h,
                         stroke_width=0,
-                        fill_color=GREEN_C,
-                        fill_opacity=0.9,
                     )
+                    fill.set_fill(color=[GREEN_E, YELLOW_B], opacity=0.9)
                     if target_y >= y:
                         fill.move_to([x, y + fill_h / 2, 0])
                     else:
