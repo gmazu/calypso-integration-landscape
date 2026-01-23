@@ -23,10 +23,12 @@ python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline
 
 ## Pendientes
 - [ ] Definir y documentar el criterio exacto de “contexto” al filtrar por ID.
+- [ ] Esperar VB antes de hacer cambios; agregar esto en la sección de contexto.
 - [x] Implementar filtros internos solo-XLSX con `--nivel` y `--id` (sin `--scope`).
 - [x] Implementar salida de estadística previa para evitar escenas saturadas.
 - [x] Crear `gantt_timeline_v2.py` (mantener `gantt_timeline.py` intacto).
 - [ ] Implementar backup del XLSX junto al MP4 con timestamp y mismo nombre base.
+- [ ] Ajustar ecualizador de % avance: 100% debe llegar al tope; sin bordes, barras horizontales estilo CRT, con gradiente cromático de rojo→verde y 0% en blanco (ref: `Images/940fafb26928fac30b9ce90e60eb67f7.jpg`).
 
 ## Hecho
 - [x] Lectura de XLSX con indentación (alignment.indent) para niveles.
