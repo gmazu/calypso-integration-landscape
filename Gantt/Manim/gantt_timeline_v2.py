@@ -798,8 +798,20 @@ class GanttTimelineLevel2(Scene):
             # Guías finas desde la fecha superior hacia la escala inferior
             for idx, d in enumerate(date_keys):
                 x = date_to_x(datetime.combine(d, datetime.min.time()))
-                guide = Line([x, timeline_left[1], 0], [x, scale_y, 0], color=GRAY_D, stroke_width=0.5)
-                date_guides.add(guide)
+                # Guía con desvanecido en el centro
+                y_top = timeline_left[1]
+                y_bottom = scale_y
+                segs = 7
+                min_opacity = 0.1
+                for s in range(segs):
+                    t0 = s / segs
+                    t1 = (s + 1) / segs
+                    y0 = y_top + (y_bottom - y_top) * t0
+                    y1 = y_top + (y_bottom - y_top) * t1
+                    t_mid = (t0 + t1) / 2
+                    opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+                    seg = Line([x, y0, 0], [x, y1, 0], color=GRAY_B, stroke_width=0.5, stroke_opacity=opacity)
+                    date_guides.add(seg)
 
         if undated:
             undated_title = Text("Sin fechas", font_size=16, color=GRAY_B)
