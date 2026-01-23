@@ -723,6 +723,7 @@ class GanttTimelineLevel2(Scene):
         bar_bg = VGroup()
         bar_lit = VGroup()
         bar_full = VGroup()
+        date_guides = VGroup()
         for i in range(1, len(date_keys)):
             d0 = date_keys[i - 1]
             d1 = date_keys[i]
@@ -764,7 +765,7 @@ class GanttTimelineLevel2(Scene):
                 full_seg.move_to([x0 + (d + 0.5) * unit_w, scale_y, 0])
                 bar_full.add(full_seg)
 
-                if t_prog <= pct_norm:
+                if pct_norm > 0 and t_prog <= pct_norm:
                     if t_prog <= 0.5:
                         color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
                     else:
@@ -788,24 +789,17 @@ class GanttTimelineLevel2(Scene):
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
             txt = Text(f"{delta_days}d", font_size=9, color=GRAY_B)
             txt.move_to([mid_x, scale_y - 0.28, 0])
-            if d1 in pct_by_date:
-                avg_txt = Text(f"{pct_by_date[d1]}%", font_size=10, color=GREEN_C)
-                avg_txt.move_to([mid_x, scale_y + 0.22, 0])
-                deltas.add(VGroup(tick, avg_txt, txt))
-            else:
-                deltas.add(VGroup(tick, txt))
-
-            # Fecha en el punto de separación del tramo
-            date_str = d1.strftime("%d/%m")
-            fs = max(7, min(9, seg_width * 3))
-            date_lbl = Text(date_str, font_size=fs, color=GRAY_C)
-            date_lbl.next_to(tick, DOWN, buff=0.03)
-            deltas.add(date_lbl)
+            deltas.add(VGroup(tick, txt))
 
         if date_keys:
             x_start = date_to_x(datetime.combine(date_keys[0], datetime.min.time()))
             x_end = date_to_x(datetime.combine(date_keys[-1], datetime.min.time()))
             deltas.add(Line([x_end, scale_y + 0.08, 0], [x_end, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1))
+            # Guías finas desde la fecha superior hacia la escala inferior
+            for idx, d in enumerate(date_keys):
+                x = date_to_x(datetime.combine(d, datetime.min.time()))
+                guide = Line([x, timeline_left[1], 0], [x, scale_y, 0], color=GRAY_D, stroke_width=0.5)
+                date_guides.add(guide)
 
         if undated:
             undated_title = Text("Sin fechas", font_size=16, color=GRAY_B)
@@ -832,6 +826,8 @@ class GanttTimelineLevel2(Scene):
         if deltas:
             self.play(FadeIn(bar_bg), run_time=0.4)
             self.play(LaggedStartMap(FadeIn, deltas, lag_ratio=0.03), run_time=0.6)
+        if date_guides:
+            self.play(LaggedStartMap(FadeIn, date_guides, lag_ratio=0.02), run_time=0.4)
 
         # Mostrar "hoy" junto con el resto de elementos
         if today_group:
