@@ -371,7 +371,7 @@ class GanttTimelineLevel2(Scene):
         dated = []
         undated = []
         for row in tasks:
-            task_id, _, name, *_rest, start, end, _pct, _dur, _pred = row
+            task_id, _, name, *_rest, start, end, pct, _dur, _pred = row
             if start and end:
                 dated.append(
                     {
@@ -381,6 +381,7 @@ class GanttTimelineLevel2(Scene):
                         "end": datetime.strptime(end, "%d/%m/%y"),
                         "start_str": start,
                         "end_str": end,
+                        "pct": pct,
                     }
                 )
             else:
@@ -409,27 +410,44 @@ class GanttTimelineLevel2(Scene):
             ratio = offset / total
             return interpolate(timeline_left[0], timeline_right[0], ratio)
 
+        # Promedio global de avance para etiqueta en "hoy"
+        pct_all = []
+        for t in dated:
+            if t.get("pct"):
+                try:
+                    pct_all.append(float(str(t["pct"]).replace("%", "").strip()))
+                except ValueError:
+                    pass
+        avg_all = round(sum(pct_all) / len(pct_all)) if pct_all else None
+
         # Línea de "hoy"
         today = datetime.now()
         if start_min <= today <= end_max:
             x_today = date_to_x(today)
             today_line = Line(
-                [x_today, timeline_left[1] - 2.9, 0],
-                [x_today, timeline_left[1] + 2.6, 0],
+                [x_today, timeline_left[1] - 3.2, 0],
+                [x_today, timeline_left[1] - 2.6, 0],
                 color=RED,
-                stroke_width=2,
+                stroke_width=1,
             )
-            today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=12, color=RED)
-            today_label.next_to(today_line, UP, buff=0.1)
+            today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=11, color=RED)
+            today_label.next_to(today_line, UP, buff=0.05)
+            if avg_all is not None:
+                today_pct = Text(f"Prom {avg_all}%", font_size=10, color=RED_E)
+                today_pct.next_to(today_line, DOWN, buff=0.04)
+            else:
+                today_pct = None
         else:
             today_line = None
             today_label = None
+            today_pct = None
 
         points = VGroup()
         stems = VGroup()
         labels = VGroup()
         dates = VGroup()
         deltas = VGroup()
+        pct_by_date: dict = {}
 
         grouped = OrderedDict()
         for task in dated:
@@ -454,9 +472,6 @@ class GanttTimelineLevel2(Scene):
                 stem_len = [1.0, 1.5, 2.0][below_idx % 3]
                 below_idx += 1
 
-            stem_end_y = y + (stem_len if above else -stem_len)
-            stem = Line([x, y, 0], [x, stem_end_y, 0], color=GRAY_B, stroke_width=1)
-
             date_text = tasks_for_date[0]["start"].strftime("%d/%m")
             date_label = Text(date_text, font_size=12, color=BLUE_D)
             date_label.next_to(point, DOWN if above else UP, buff=0.1)
@@ -469,14 +484,70 @@ class GanttTimelineLevel2(Scene):
                 title_text = Text(f"ID {task['id']}", font_size=12, weight=BOLD)
                 wrapped_name = textwrap.fill(task["name"], width=28)
                 body = Text(wrapped_name, font_size=12, color=GRAY_B, line_spacing=0.9)
-                text_block = VGroup(title_text, body).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
+                end_line = f"Fin: {task['end_str']}"
+                if task.get("pct"):
+                    end_line = f"{end_line}  {task['pct']}"
+                end_text = Text(end_line, font_size=11, color=GRAY_C)
+                text_block = VGroup(title_text, body, end_text).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
 
                 text_block.move_to([x, target_y, 0])
+                if target_y >= y:
+                    text_block.shift(UP * 0.35)
+                else:
+                    text_block.shift(DOWN * 0.35)
                 labels.add(text_block)
 
+                # Barra vertical hueca con relleno segun % por ID
+                bar_width = 0.1
+                bar_height = abs(target_y - y)
+                bar_center = (y + target_y) / 2
+                outline = Rectangle(
+                    width=bar_width,
+                    height=bar_height,
+                    stroke_color=GRAY_B,
+                    stroke_width=1.3,
+                    fill_opacity=0,
+                ).move_to([x, bar_center, 0])
+
+                pct_val = None
+                if task.get("pct"):
+                    try:
+                        pct_val = float(str(task["pct"]).replace("%", "").strip())
+                    except ValueError:
+                        pct_val = None
+                if pct_val is None:
+                    fill = None
+                else:
+                    pct_norm = max(0.0, min(1.0, pct_val / 100.0))
+                    fill_h = bar_height * pct_norm
+                    fill = Rectangle(
+                        width=bar_width * 0.75,
+                        height=fill_h,
+                        stroke_width=0,
+                        fill_color=GREEN_C,
+                        fill_opacity=0.9,
+                    )
+                    if target_y >= y:
+                        fill.move_to([x, y + fill_h / 2, 0])
+                    else:
+                        fill.move_to([x, y - fill_h / 2, 0])
+
+                stems.add(outline)
+                if fill:
+                    stems.add(fill)
+
             points.add(point)
-            stems.add(stem)
             dates.add(date_label)
+
+            pcts = []
+            for t in tasks_for_date:
+                if t.get("pct"):
+                    try:
+                        pcts.append(float(str(t["pct"]).replace("%", "").strip()))
+                    except ValueError:
+                        pass
+            if pcts:
+                pct_by_date[key] = round(sum(pcts) / len(pcts))
 
         # Escala inferior estilo "mapa": barra segmentada con dias por tramo
         scale_y = timeline_left[1] - 3.2
@@ -504,7 +575,12 @@ class GanttTimelineLevel2(Scene):
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
             txt = Text(f"{delta_days}d", font_size=10, color=GRAY_B)
             txt.next_to(seg, DOWN, buff=0.06)
-            deltas.add(VGroup(tick, txt))
+            if d1 in pct_by_date:
+                avg_txt = Text(f"Prom {pct_by_date[d1]}%", font_size=9, color=GREEN_C)
+                avg_txt.next_to(txt, DOWN, buff=0.04)
+                deltas.add(VGroup(tick, txt, avg_txt))
+            else:
+                deltas.add(VGroup(tick, txt))
 
         if date_keys:
             x_start = date_to_x(datetime.combine(date_keys[0], datetime.min.time()))
@@ -524,7 +600,10 @@ class GanttTimelineLevel2(Scene):
         self.play(Write(header), run_time=1)
         self.play(Create(timeline), run_time=0.8)
         if today_line:
-            self.play(FadeIn(today_line), FadeIn(today_label), run_time=0.4)
+            anims = [FadeIn(today_line), FadeIn(today_label)]
+            if today_pct:
+                anims.append(FadeIn(today_pct))
+            self.play(*anims, run_time=0.4)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(Create, stems, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
