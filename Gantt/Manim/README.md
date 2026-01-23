@@ -42,6 +42,11 @@ python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline
 - [x] Implementar salida de estadística previa para evitar escenas saturadas.
 - [x] Crear `gantt_timeline_v2.py` (mantener `gantt_timeline.py` intacto).
 - [ ] Implementar backup del XLSX junto al MP4 con timestamp y mismo nombre base.
+- [ ] Agregar líneas de tiempo finales (inicio→fin) arriba en la línea superior.
+- [ ] Poner nombre/etiqueta a las líneas de tiempo superior e inferior.
+- [ ] Hacer pruebas (casos con filtros `--id/--nivel/--expand`).
+- [ ] Agregar curva de rendimiento (cálculo de velocidad de avance) y pendiente para estimar fecha fin; la proyección debe ser ≤ fecha fin.
+- [ ] Subir una copia del video a una cuenta privada de YouTube (pendiente de crearla).
 - [ ] Ajustar ecualizador de % avance: 100% debe llegar al tope; sin bordes, barras horizontales estilo CRT, con gradiente cromático de rojo→verde y 0% en blanco (ref: `Images/940fafb26928fac30b9ce90e60eb67f7.jpg`).
 
 ## Hecho
