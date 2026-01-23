@@ -1,12 +1,9 @@
 tasks = [
+    [1, 0, 'Hablitación Plataforma Calypso Banco BCI', 'En progreso', 'Sixmanager', '06/01/26', '29/04/26', '8%', '81,5d', ''],
+    [2, 1, 'Ambiente Pre Productivo', '', 'Sixmanager', '06/01/26', '29/04/26', '8%', '81,5d', ''],
     [3, 2, 'Kick off y requerimientos', '', '', '06/01/26', '06/01/26', '100%', '1d', ''],
     [6, 2, 'Habilitacion de infrastructura fisica (Pre requisitos)', '', '', '15/01/26', '03/03/26', '20%', '34d', ''],
     [17, 2, 'Plan de implementacion', '', '', '26/01/26', '16/04/26', '2%', '58,5d', ''],
     [59, 2, 'Integración de componentes', '', '', '13/04/26', '24/04/26', '0%', '9,5d', ''],
     [66, 2, 'Cierre formal de la Fase 1', '', '', '16/04/26', '29/04/26', '0%', '9d', ''],
-    [73, 2, 'Habilitacion de infrastructura fisica (Pre requisitos)', '', '', '', '', '0%', '', ''],
-    [91, 2, 'Plan de implementacion', '', '', '', '', '0%', '', ''],
-    [163, 2, 'Plan de pruebas Replicación de LUNS', '', '', '', '', '0%', '', ''],
-    [166, 2, 'Integración de componentes', '', '', '', '', '0%', '', ''],
-    [192, 2, 'Paso a Producción', 'No se ha iniciado', '', '', '', '0%', '', ''],
 ]

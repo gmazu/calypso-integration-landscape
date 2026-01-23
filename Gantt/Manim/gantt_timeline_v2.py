@@ -2,16 +2,21 @@ from __future__ import annotations
 
 import argparse
 import ast
-from datetime import datetime
-from collections import OrderedDict
-import textwrap
 import sys
+import textwrap
+from collections import OrderedDict
+from datetime import datetime
 from pathlib import Path
+import uuid
+import os
 
 from manim import *
 from openpyxl import load_workbook
 
 
+# =============================================================================
+# Funciones auxiliares
+# =============================================================================
 def format_date(value) -> str:
     if isinstance(value, datetime):
         return value.strftime("%d/%m/%y")
@@ -108,41 +113,138 @@ def load_tasks_from_xlsx(path: Path) -> list[list]:
     return tasks
 
 
-def filter_by_level(tasks: list[list], level: int) -> list[list]:
-    target_level = level + 1
-    return [row for row in tasks if row[1] == target_level]
+def _parse_levels(values: list[str] | None) -> list[int]:
+    if not values:
+        return []
+    levels: list[int] = []
+    for raw in values:
+        parts = [p.strip() for p in raw.split(",") if p.strip()]
+        for part in parts:
+            levels.append(int(part))
+    return levels
 
 
-def write_tasks_file(tasks: list[list], output_path: Path) -> None:
-    with output_path.open("w", encoding="utf-8") as f:
-        f.write("tasks = [\n")
-        for row in tasks:
-            f.write(f"    {row},\n")
-        f.write("]\n")
+def filter_by_levels(tasks: list[list], levels: list[int]) -> list[list]:
+    """Filtra por niveles e incluye ancestros para dar contexto visual."""
+    if not levels:
+        return tasks
+    level_set = set(levels)
+    result: list[list] = []
+    seen: set[tuple] = set()
+    stack: list[list] = []
+
+    for row in tasks:
+        level = row[1]
+        while stack and stack[-1][1] >= level:
+            stack.pop()
+        stack.append(row)
+
+        if level in level_set:
+            # Incluir ancestros y la fila actual sin duplicados.
+            for parent in stack:
+                key = tuple(parent)
+                if key not in seen:
+                    result.append(parent)
+                    seen.add(key)
+
+    return result
 
 
-def run_filter_cli(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(description="Genera filter_gantt.tasks desde XLSX.")
-    parser.add_argument("-xlsx", "--xlsx", required=True, help="Ruta al archivo XLSX.")
-    parser.add_argument("--nivel", type=int, required=True, help="Nivel base (muestra nivel + 1).")
-    parser.add_argument(
-        "-o",
-        "--output",
-        default=Path(__file__).with_name("filter_gantt.tasks"),
-        help="Archivo de salida (default: filter_gantt.tasks).",
-    )
-    args = parser.parse_args(argv)
+def parse_filter_sequence(argv: list[str]) -> list[tuple[str, list[int] | int]]:
+    """Parsea --nivel/--id en el orden recibido para aplicar filtros anidados."""
+    seq: list[tuple[str, list[int] | int]] = []
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == "--nivel":
+            if i + 1 >= len(argv):
+                raise SystemExit("Error: --nivel requiere un valor.")
+            levels = _parse_levels([argv[i + 1]])
+            seq.append(("nivel", levels))
+            i += 2
+            continue
+        if arg == "--id":
+            if i + 1 >= len(argv):
+                raise SystemExit("Error: --id requiere un valor.")
+            try:
+                task_id = int(argv[i + 1])
+            except ValueError as exc:
+                raise SystemExit("Error: --id requiere un entero.") from exc
+            seq.append(("id", task_id))
+            i += 2
+            continue
+        i += 1
+    return seq
 
-    xlsx_path = Path(args.xlsx)
-    if not xlsx_path.exists():
-        print(f"Error: no existe el archivo {xlsx_path}", file=sys.stderr)
-        return 1
 
-    tasks_all = load_tasks_from_xlsx(xlsx_path)
-    filtered = filter_by_level(tasks_all, args.nivel)
-    write_tasks_file(filtered, Path(args.output))
-    print(f"Escrito: {args.output}")
-    return 0
+def split_by_pipe(argv: list[str]) -> list[list[str]]:
+    """Divide argumentos en segmentos separados por '|'."""
+    segments: list[list[str]] = []
+    current: list[str] = []
+    for arg in argv:
+        if arg == "|":
+            segments.append(current)
+            current = []
+        else:
+            current.append(arg)
+    segments.append(current)
+    return segments
+
+
+def filter_by_id_with_context(tasks: list[list], task_id: int, max_depth: int | None = None) -> list[list]:
+    """
+    Filtra la tarea con el ID dado más sus hijos directos.
+    Retorna la tarea padre y todas las tareas con nivel mayor hasta encontrar
+    otra tarea del mismo nivel o menor.
+    """
+    result: list[list] = []
+    seen: set[tuple] = set()
+    stack: list[list] = []
+
+    found_idx = None
+    parent_level = None
+
+    for idx, row in enumerate(tasks):
+        level = row[1]
+        while stack and stack[-1][1] >= level:
+            stack.pop()
+        stack.append(row)
+        if row[0] == task_id:
+            found_idx = idx
+            parent_level = level
+            for parent in stack:
+                key = tuple(parent)
+                if key not in seen:
+                    result.append(parent)
+                    seen.add(key)
+            break
+
+    if found_idx is None or parent_level is None:
+        return []
+
+    # Agregar hijos (nivel > parent_level) hasta encontrar mismo nivel o menor
+    for row in tasks[found_idx + 1:]:
+        if row[1] <= parent_level:
+            break
+        if max_depth is not None and row[1] > parent_level + max_depth:
+            continue
+        key = tuple(row)
+        if key not in seen:
+            result.append(row)
+            seen.add(key)
+
+    return result
+
+
+def get_tasks_for_render() -> list[list]:
+    """Lee tareas desde filter_gantt.tasks (generado por el CLI)."""
+    tasks_file = Path(__file__).with_name("filter_gantt.tasks")
+    if not tasks_file.exists():
+        raise FileNotFoundError(
+            f"No se encontró {tasks_file}. "
+            "Ejecuta primero el CLI para generar filter_gantt.tasks."
+        )
+    return load_tasks_from_file(tasks_file)
 
 
 def load_tasks_from_file(path: Path) -> list[list]:
@@ -156,29 +258,119 @@ def load_tasks_from_file(path: Path) -> list[list]:
     raise ValueError("tasks list not found in file")
 
 
-parser = argparse.ArgumentParser(description="Gantt chart timeline generator for Manim (v2).")
-parser.add_argument(
-    "-f",
-    "--file",
-    default=Path(__file__).with_name("filter_gantt.tasks"),
-    help="Ruta al archivo con 'tasks = [...]' (default: filter_gantt.tasks).",
-)
-custom_args, _ = parser.parse_known_args()
+def write_tasks_file(tasks: list[list], output_path: Path) -> None:
+    with output_path.open("w", encoding="utf-8") as f:
+        f.write("tasks = [\n")
+        for row in tasks:
+            f.write(f"    {row},\n")
+        f.write("]\n")
 
-if __name__ == "__main__":
-    raise SystemExit(run_filter_cli(sys.argv[1:]))
 
-# manim -pql gantt_timeline_v2.py GanttTimelineLevel2
+# =============================================================================
+# CLI standalone (python gantt_timeline_v2.py -xlsx ... --nivel ...)
+# =============================================================================
+def run_filter_cli() -> int:
+    """CLI para generar filter_gantt.tasks desde XLSX."""
+    parser = argparse.ArgumentParser(
+        description="Genera filter_gantt.tasks desde XLSX o renderiza con Manim."
+    )
+    parser.add_argument("-xlsx", "--xlsx", required=True, type=Path, help="Ruta al archivo XLSX.")
+    parser.add_argument(
+        "--expand",
+        action="store_true",
+        help="Al usar --id, expande solo el siguiente nivel del ID desde el XLSX completo.",
+    )
+    parser.add_argument(
+        "-debug",
+        "--debug",
+        action="store_true",
+        help="Imprime un informe breve del filtro (IDs/niveles/títulos).",
+    )
+    parser.add_argument(
+        "-o", "--output",
+        type=Path,
+        default=Path(__file__).with_name("filter_gantt.tasks"),
+        help="Archivo de salida (default: filter_gantt.tasks).",
+    )
+    args, _unknown = parser.parse_known_args()
+    segments = split_by_pipe(sys.argv[1:])
+
+    if not args.xlsx.exists():
+        print(f"Error: no existe el archivo {args.xlsx}", file=sys.stderr)
+        return 1
+
+    filtered = load_tasks_from_xlsx(args.xlsx)
+    temp_files: list[Path] = []
+
+    for seg_idx, seg in enumerate(segments):
+        filter_seq = parse_filter_sequence(seg)
+        if filter_seq:
+            for kind, value in filter_seq:
+                if kind == "nivel":
+                    filtered = filter_by_levels(
+                        filtered, value if isinstance(value, list) else [value]
+                    )
+                    print(f"Filtrado por nivel {value}: {len(filtered)} tareas")
+                elif kind == "id":
+                    base = load_tasks_from_xlsx(args.xlsx) if args.expand else filtered
+                    depth = 1 if args.expand else None
+                    filtered = filter_by_id_with_context(base, int(value), max_depth=depth)
+                    print(f"Filtrado por ID {value}: {len(filtered)} tareas")
+        else:
+            if seg_idx == 0:
+                print(f"Sin filtro: {len(filtered)} tareas")
+
+        if seg_idx < len(segments) - 1:
+            tmp = Path("/tmp") / f"gantt_filter_{uuid.uuid4().hex}_{seg_idx}.tasks"
+            write_tasks_file(filtered, tmp)
+            temp_files.append(tmp)
+            filtered = load_tasks_from_file(tmp)
+
+    if args.debug:
+        levels = sorted({row[1] for row in filtered})
+        print(f"Niveles presentes: {levels}")
+        print("Tareas filtradas (id | nivel | título):")
+        for task_id, level, name, *_rest in filtered:
+            print(f"- {task_id} | {level} | {name}")
+
+    write_tasks_file(filtered, args.output)
+    print(f"Escrito: {args.output}")
+
+    for tmp in temp_files:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+    return 0
+
+
+# =============================================================================
+# Escenas Manim
+# =============================================================================
+
+# Uso:
+#   manim -pql gantt_timeline_v2.py GanttTimelineLevel2 --xlsx archivo.xlsx --nivel 1
+#   manim -pql gantt_timeline_v2.py GanttTimelineLevel2 --xlsx archivo.xlsx --id 42
 
 
 class GanttTimelineLevel2(Scene):
     def construct(self):
-        tasks = load_tasks_from_file(Path(custom_args.file))
-        level2 = tasks
+        tasks = get_tasks_for_render()
+
+        title_text = "Hablitación Plataforma Calypso Banco BCI"
+        subtitle_text = "Ambiente Pre Productivo"
+        level0 = next((row for row in tasks if row[1] == 0), None)
+        level1 = next((row for row in tasks if row[1] == 1), None)
+        if level0:
+            title_text = level0[2]
+        if level1:
+            subtitle_text = level1[2]
+
+        tasks = [row for row in tasks if row[1] >= 2]
 
         dated = []
         undated = []
-        for row in level2:
+        for row in tasks:
             task_id, _, name, *_rest, start, end, _pct, _dur, _pred = row
             if start and end:
                 dated.append(
@@ -196,8 +388,8 @@ class GanttTimelineLevel2(Scene):
 
         dated.sort(key=lambda t: t["start"])
 
-        title = Text("Hablitación Plataforma Calypso Banco BCI", font_size=34, weight=BOLD)
-        subtitle = Text("Ambiente Pre Productivo", font_size=18, color=GRAY_B)
+        title = Text(title_text, font_size=28, weight=BOLD)
+        subtitle = Text(subtitle_text, font_size=16, color=GRAY_B)
         header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_edge(UP, buff=0.4)
 
         timeline_left = LEFT * 5.5 + DOWN * 0.2
@@ -221,6 +413,7 @@ class GanttTimelineLevel2(Scene):
         stems = VGroup()
         labels = VGroup()
         dates = VGroup()
+        deltas = VGroup()
 
         grouped = OrderedDict()
         for task in dated:
@@ -230,9 +423,7 @@ class GanttTimelineLevel2(Scene):
         above_idx = 0
         below_idx = 0
 
-        above_idx = 0
-        below_idx = 0
-
+        date_keys = list(grouped.keys())
         for idx, (key, tasks_for_date) in enumerate(grouped.items()):
             x = date_to_x(tasks_for_date[0]["start"])
             y = timeline_left[1]
@@ -259,10 +450,10 @@ class GanttTimelineLevel2(Scene):
                 offset = offsets[t_idx] if t_idx < len(offsets) else offsets[-1]
                 target_y = y + (offset if above else -offset)
 
-                title = Text(f"ID {task['id']}", font_size=12, weight=BOLD)
+                title_text = Text(f"ID {task['id']}", font_size=12, weight=BOLD)
                 wrapped_name = textwrap.fill(task["name"], width=28)
                 body = Text(wrapped_name, font_size=12, color=GRAY_B, line_spacing=0.9)
-                text_block = VGroup(title, body).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
+                text_block = VGroup(title_text, body).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
 
                 text_block.move_to([x, target_y, 0])
                 labels.add(text_block)
@@ -270,6 +461,39 @@ class GanttTimelineLevel2(Scene):
             points.add(point)
             stems.add(stem)
             dates.add(date_label)
+
+        # Escala inferior estilo "mapa": barra segmentada con dias por tramo
+        scale_y = timeline_left[1] - 3.2
+        bar_height = 0.15
+        bar = VGroup()
+        for i in range(1, len(date_keys)):
+            d0 = date_keys[i - 1]
+            d1 = date_keys[i]
+            delta_days = (d1 - d0).days
+            x0 = date_to_x(datetime.combine(d0, datetime.min.time()))
+            x1 = date_to_x(datetime.combine(d1, datetime.min.time()))
+            mid_x = (x0 + x1) / 2
+
+            seg_width = max(0.01, x1 - x0)
+            seg_color = BLUE_E if i % 2 == 0 else GRAY_E
+            seg = Rectangle(
+                width=seg_width,
+                height=bar_height,
+                stroke_width=0,
+                fill_color=seg_color,
+                fill_opacity=1,
+            ).move_to([mid_x, scale_y, 0])
+            bar.add(seg)
+
+            tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
+            txt = Text(f"{delta_days}d", font_size=10, color=GRAY_B)
+            txt.next_to(seg, DOWN, buff=0.06)
+            deltas.add(VGroup(tick, txt))
+
+        if date_keys:
+            x_start = date_to_x(datetime.combine(date_keys[0], datetime.min.time()))
+            x_end = date_to_x(datetime.combine(date_keys[-1], datetime.min.time()))
+            deltas.add(Line([x_end, scale_y + 0.08, 0], [x_end, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1))
 
         if undated:
             undated_title = Text("Sin fechas", font_size=16, color=GRAY_B)
@@ -287,6 +511,9 @@ class GanttTimelineLevel2(Scene):
         self.play(LaggedStartMap(Create, stems, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
         self.play(LaggedStartMap(FadeIn, labels, lag_ratio=0.05), run_time=1.2)
+        if deltas:
+            self.play(FadeIn(bar), run_time=0.4)
+            self.play(LaggedStartMap(FadeIn, deltas, lag_ratio=0.03), run_time=0.6)
 
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
@@ -296,11 +523,21 @@ class GanttTimelineLevel2(Scene):
 
 class GanttTimelineCircular(ThreeDScene):
     def construct(self):
-        tasks = load_tasks_from_file(Path(custom_args.file))
-        level2 = tasks
+        tasks = get_tasks_for_render()
+
+        title_text = "Hablitación Plataforma Calypso Banco BCI"
+        subtitle_text = "Ambiente Pre Productivo"
+        level0 = next((row for row in tasks if row[1] == 0), None)
+        level1 = next((row for row in tasks if row[1] == 1), None)
+        if level0:
+            title_text = level0[2]
+        if level1:
+            subtitle_text = level1[2]
+
+        tasks = [row for row in tasks if row[1] >= 2]
 
         dated = []
-        for row in level2:
+        for row in tasks:
             task_id, _, name, *_rest, start, end, _pct, _dur, _pred = row
             if start and end:
                 dated.append(
@@ -313,8 +550,8 @@ class GanttTimelineCircular(ThreeDScene):
 
         dated.sort(key=lambda t: t["start"])
 
-        title = Text("Hablitación Plataforma Calypso Banco BCI", font_size=32, weight=BOLD)
-        subtitle = Text("Ambiente Pre Productivo", font_size=18, color=GRAY_B)
+        title = Text(title_text, font_size=26, weight=BOLD)
+        subtitle = Text(subtitle_text, font_size=16, color=GRAY_B)
         header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_edge(UP, buff=0.4)
 
         outer = Arc(
@@ -382,6 +619,4 @@ class GanttTimelineCircular(ThreeDScene):
 
 
 if __name__ == "__main__":
-    # manim -pql Gantt/Manim/gantt_timeline.py GanttTimelineLevel2
-    # manim -pql Gantt/Manim/gantt_timeline.py GanttTimelineCircular
-    pass
+    raise SystemExit(run_filter_cli())
