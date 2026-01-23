@@ -510,6 +510,7 @@ class GanttTimelineLevel2(Scene):
         dates = VGroup()
         deltas = VGroup()
         full_test = VGroup()
+        full_test_segments = VGroup()
         pct_by_date: dict = {}
 
         grouped = OrderedDict()
@@ -577,6 +578,15 @@ class GanttTimelineLevel2(Scene):
                         pct_val = float(str(task["pct"]).replace("%", "").strip())
                     except ValueError:
                         pct_val = None
+                if pct_val is None:
+                    stem = Line(
+                        [x, y, 0],
+                        [x, target_y, 0],
+                        color=GRAY_C,
+                        stroke_width=2,
+                    )
+                    stems_bg.add(stem)
+                    continue
                 # Siempre dibujar segmentos de fondo (apagados)
                 seg_count = 14
                 gap_ratio = 0.2
@@ -654,6 +664,7 @@ class GanttTimelineLevel2(Scene):
                         seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
                     seg.move_to([x, seg_y, 0])
                     full_fill.add(seg)
+                    full_test_segments.add(seg)
                 full_test.add(full_fill)
                 # Cap para 100%: asegura que llegue al borde
                 if pct_val is not None and pct_val >= 99.9:
@@ -724,7 +735,7 @@ class GanttTimelineLevel2(Scene):
             days = max(1, delta_days)
             unit_w = seg_width / days
             pct_for_span = pct_by_date.get(d1)
-            pct_norm = 1.0 if pct_for_span is None else max(0.0, min(1.0, pct_for_span / 100.0))
+            pct_norm = 0.0 if pct_for_span is None else max(0.0, min(1.0, pct_for_span / 100.0))
             for d in range(days):
                 t_prog = d / max(1, days - 1)
                 # Fondo apagado
@@ -826,13 +837,11 @@ class GanttTimelineLevel2(Scene):
         if today_group:
             self.play(FadeIn(today_group), run_time=0.4)
 
-        # Prueba de calidad: llenar ecualizadores y barra inferior al 100% brevemente
-        if full_test:
-            self.play(AnimationGroup(*[FadeIn(g) for g in full_test], lag_ratio=1), run_time=0.9)
-            if bar_full:
-                self.play(AnimationGroup(*[FadeIn(g) for g in bar_full], lag_ratio=0.05), run_time=0.7)
-            self.wait(0.3)
-            self.play(FadeOut(full_test), FadeOut(bar_full), run_time=0.4)
+        # Prueba de calidad: flash rápido sin pausas perceptibles
+        if full_test_segments:
+            self.add(full_test, bar_full)
+            self.wait(0.5)
+            self.remove(full_test, bar_full)
 
         # Mostrar valores reales después de la prueba
         if stems_lit:
