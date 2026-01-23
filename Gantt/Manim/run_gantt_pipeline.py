@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import shutil
+from datetime import datetime
 from pathlib import Path
 
 
@@ -50,6 +52,22 @@ def build_manim_args(args: argparse.Namespace) -> list[str]:
     return cmd
 
 
+def find_latest_mp4(root: Path) -> Path | None:
+    mp4s = list(root.rglob("*.mp4"))
+    if not mp4s:
+        return None
+    return max(mp4s, key=lambda p: p.stat().st_mtime)
+
+
+def prune_other_mp4s(latest: Path) -> None:
+    for p in latest.parent.glob("*.mp4"):
+        if p != latest:
+            try:
+                p.unlink()
+            except OSError:
+                pass
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Genera filter_gantt.tasks desde XLSX y luego renderiza con Manim."
@@ -89,6 +107,11 @@ def main() -> int:
         help="Al usar --id, expande solo el siguiente nivel del ID desde el XLSX completo.",
     )
     parser.add_argument(
+        "--keep-scene",
+        type=Path,
+        help="Ruta donde se guarda una copia del último video renderizado.",
+    )
+    parser.add_argument(
         "--only-debug",
         action="store_true",
         help="Solo genera el filtro y muestra el informe; no renderiza.",
@@ -114,7 +137,24 @@ def main() -> int:
     manim_cmd = build_manim_args(args)
     print("Ejecutando:", " ".join(manim_cmd))
     result = subprocess.run(manim_cmd)
-    return result.returncode
+    if result.returncode != 0:
+        return result.returncode
+
+    media_root = Path(__file__).with_name("media") / "videos" / "gantt_timeline_v2"
+    latest = find_latest_mp4(media_root)
+    if latest:
+        prune_other_mp4s(latest)
+        if args.keep_scene:
+            args.keep_scene.mkdir(parents=True, exist_ok=True)
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            dest = args.keep_scene / f"{args.scene}_{stamp}.mp4"
+            try:
+                shutil.copy2(latest, dest)
+                print(f"Guardado: {dest}")
+            except OSError as exc:
+                print(f"Error al guardar copia: {exc}", file=sys.stderr)
+
+    return 0
 
 
 if __name__ == "__main__":

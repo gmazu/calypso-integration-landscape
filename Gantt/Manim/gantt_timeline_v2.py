@@ -504,10 +504,12 @@ class GanttTimelineLevel2(Scene):
             print(f"[DEBUG_TODAY] start_min={start_min.date()} end_max={end_max.date()} today={today.date()}")
 
         points = VGroup()
-        stems = VGroup()
+        stems_bg = VGroup()
+        stems_lit = VGroup()
         labels = VGroup()
         dates = VGroup()
         deltas = VGroup()
+        full_test = VGroup()
         pct_by_date: dict = {}
 
         grouped = OrderedDict()
@@ -580,7 +582,8 @@ class GanttTimelineLevel2(Scene):
                 gap_ratio = 0.2
                 seg_height = bar_height / (seg_count + (seg_count - 1) * gap_ratio)
                 seg_gap = seg_height * gap_ratio
-                fill = VGroup()
+                fill_bg = VGroup()
+                fill_lit = VGroup()
                 halo = Rectangle(
                     width=bar_width,
                     height=bar_height,
@@ -588,7 +591,7 @@ class GanttTimelineLevel2(Scene):
                     fill_color=GRAY_E,
                     fill_opacity=0.12,
                 ).move_to([x, bar_center, 0])
-                fill.add(halo)
+                fill_bg.add(halo)
                 for s in range(seg_count):
                     seg = Rectangle(
                         width=bar_width,
@@ -602,7 +605,7 @@ class GanttTimelineLevel2(Scene):
                     else:
                         seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
                     seg.move_to([x, seg_y, 0])
-                    fill.add(seg)
+                    fill_bg.add(seg)
 
                 # Encender segmentos según % (si hay valor)
                 if pct_val is not None and pct_val > 0:
@@ -628,25 +631,49 @@ class GanttTimelineLevel2(Scene):
                         else:
                             seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
                         seg.move_to([x, seg_y, 0])
-                        fill.add(seg)
-                    # Cap para 100%: asegura que llegue al borde
-                    if pct_norm >= 0.999:
-                        cap_h = seg_height * 0.6
-                        cap = Rectangle(
-                            width=bar_width * 0.75,
-                            height=cap_h,
-                            stroke_width=0,
-                            fill_color=YELLOW_B,
-                            fill_opacity=0.95,
-                        )
-                        if target_y >= y:
-                            cap.move_to([x, y + bar_height - cap_h / 2, 0])
-                        else:
-                            cap.move_to([x, y - bar_height + cap_h / 2, 0])
-                        fill.add(cap)
+                        fill_lit.add(seg)
 
-                if fill:
-                    stems.add(fill)
+                # Overlay para prueba de calidad: 100% lleno (se anima al final)
+                full_fill = VGroup()
+                for s in range(seg_count):
+                    t = s / max(1, seg_count - 1)
+                    if t <= 0.5:
+                        color = interpolate_color(RED_E, GREEN_B, t * 2)
+                    else:
+                        color = interpolate_color(GREEN_B, BLUE_E, (t - 0.5) * 2)
+                    seg = Rectangle(
+                        width=bar_width,
+                        height=seg_height,
+                        stroke_width=0,
+                        fill_color=color,
+                        fill_opacity=0.8,
+                    )
+                    if target_y >= y:
+                        seg_y = y + (seg_height / 2) + s * (seg_height + seg_gap)
+                    else:
+                        seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
+                    seg.move_to([x, seg_y, 0])
+                    full_fill.add(seg)
+                full_test.add(full_fill)
+                # Cap para 100%: asegura que llegue al borde
+                if pct_val is not None and pct_val >= 99.9:
+                    cap_h = seg_height * 0.6
+                    cap = Rectangle(
+                        width=bar_width,
+                        height=cap_h,
+                        stroke_width=0,
+                        fill_color=YELLOW_B,
+                        fill_opacity=0.95,
+                    )
+                    if target_y >= y:
+                        cap.move_to([x, y + bar_height - cap_h / 2, 0])
+                    else:
+                        cap.move_to([x, y - bar_height + cap_h / 2, 0])
+                    fill_lit.add(cap)
+
+                stems_bg.add(fill_bg)
+                if len(fill_lit) > 0:
+                    stems_lit.add(fill_lit)
 
             # Marcas de escala (0-100) junto a la barra (solo una vez por fecha)
             scale_marks = VGroup()
@@ -668,7 +695,7 @@ class GanttTimelineLevel2(Scene):
 
             points.add(point)
             dates.add(date_label)
-            stems.add(scale_marks)
+            stems_bg.add(scale_marks)
 
             pcts = []
             for t in tasks_for_date:
@@ -682,7 +709,9 @@ class GanttTimelineLevel2(Scene):
 
         # Escala inferior estilo "mapa": barra segmentada con dias por tramo
         bar_height = 0.15
-        bar = VGroup()
+        bar_bg = VGroup()
+        bar_lit = VGroup()
+        bar_full = VGroup()
         for i in range(1, len(date_keys)):
             d0 = date_keys[i - 1]
             d1 = date_keys[i]
@@ -698,6 +727,32 @@ class GanttTimelineLevel2(Scene):
             pct_norm = 1.0 if pct_for_span is None else max(0.0, min(1.0, pct_for_span / 100.0))
             for d in range(days):
                 t_prog = d / max(1, days - 1)
+                # Fondo apagado
+                bg_seg = Rectangle(
+                    width=unit_w * 0.85,
+                    height=bar_height,
+                    stroke_width=0,
+                    fill_color=GRAY_C,
+                    fill_opacity=0.32,
+                )
+                bg_seg.move_to([x0 + (d + 0.5) * unit_w, scale_y, 0])
+                bar_bg.add(bg_seg)
+
+                # Full test (100%)
+                if t_prog <= 0.5:
+                    full_color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
+                else:
+                    full_color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
+                full_seg = Rectangle(
+                    width=unit_w * 0.85,
+                    height=bar_height,
+                    stroke_width=0,
+                    fill_color=full_color,
+                    fill_opacity=1,
+                )
+                full_seg.move_to([x0 + (d + 0.5) * unit_w, scale_y, 0])
+                bar_full.add(full_seg)
+
                 if t_prog <= pct_norm:
                     if t_prog <= 0.5:
                         color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
@@ -705,18 +760,19 @@ class GanttTimelineLevel2(Scene):
                         color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
                     opacity = 1
                 else:
-                    color = GRAY_C
-                    opacity = 0.32
+                    color = None
+                    opacity = 0
                 seg = Rectangle(
                     width=unit_w * 0.85,
                     height=bar_height,
                     stroke_width=0,
-                    fill_color=color,
+                    fill_color=color if color else GRAY_C,
                     fill_opacity=opacity,
                 )
                 seg_x = x0 + (d + 0.5) * unit_w
                 seg.move_to([seg_x, scale_y, 0])
-                bar.add(seg)
+                if opacity > 0:
+                    bar_lit.add(seg)
 
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
             txt = Text(f"{delta_days}d", font_size=9, color=GRAY_B)
@@ -759,16 +815,30 @@ class GanttTimelineLevel2(Scene):
             else:
                 today_group = VGroup(today_line, today_tick, today_label)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
-        self.play(LaggedStartMap(FadeIn, stems, lag_ratio=0.05), run_time=1.0)
+        self.play(LaggedStartMap(FadeIn, stems_bg, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
         self.play(LaggedStartMap(FadeIn, labels, lag_ratio=0.05), run_time=1.2)
         if deltas:
-            self.play(FadeIn(bar), run_time=0.4)
+            self.play(FadeIn(bar_bg), run_time=0.4)
             self.play(LaggedStartMap(FadeIn, deltas, lag_ratio=0.03), run_time=0.6)
 
         # Mostrar "hoy" junto con el resto de elementos
         if today_group:
             self.play(FadeIn(today_group), run_time=0.4)
+
+        # Prueba de calidad: llenar ecualizadores y barra inferior al 100% brevemente
+        if full_test:
+            self.play(AnimationGroup(*[FadeIn(g) for g in full_test], lag_ratio=1), run_time=0.9)
+            if bar_full:
+                self.play(AnimationGroup(*[FadeIn(g) for g in bar_full], lag_ratio=0.05), run_time=0.7)
+            self.wait(0.3)
+            self.play(FadeOut(full_test), FadeOut(bar_full), run_time=0.4)
+
+        # Mostrar valores reales después de la prueba
+        if stems_lit:
+            self.play(LaggedStartMap(FadeIn, stems_lit, lag_ratio=0.05), run_time=0.8)
+        if bar_lit:
+            self.play(FadeIn(bar_lit), run_time=0.4)
 
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)

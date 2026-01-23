@@ -20,6 +20,20 @@ Genera `filter_gantt.tasks` y luego renderiza en un solo comando:
 ```
 python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --nivel 1 --scene GanttTimelineLevel2 --quality pql --preview
 ```
+Opcional: guardar el último render en otra ruta con timestamp:
+```
+python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --scene GanttTimelineLevel2 --quality pql --keep-scene /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt/OUT
+```
+
+## Cambios recientes
+- Línea de tiempo lee solo `filter_gantt.tasks`; XLSX se procesa aparte.
+- Filtros en orden y soporte de `|` para encadenar pasos.
+- `--expand` abre el siguiente nivel del ID desde el XLSX completo.
+- Header toma título/subtítulo desde niveles 0/1 y la línea de tiempo usa niveles >= 2.
+- Escala inferior tipo “mapa” con días y % promedio; fechas en el tick.
+- Marcador “Hoy” con dial vintage (Real vs Plan) y tick sobre la línea principal.
+- Barras de avance tipo ecualizador CRT con gradiente RGB y segmentos apagados visibles.
+- Prueba de calidad: al final se llenan brevemente todos los ecualizadores.
 
 ## Pendientes
 - [ ] Definir y documentar el criterio exacto de “contexto” al filtrar por ID.
