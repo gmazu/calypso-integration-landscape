@@ -446,8 +446,19 @@ class GanttTimelineLevel2(Scene):
             planned_all.append(planned)
         avg_planned = round(sum(planned_all) / len(planned_all)) if planned_all else None
 
-        # Línea de "hoy" sobre la escala inferior (sin clamp)
-        x_today = date_to_x(today)
+        # Línea de "hoy" interpolada entre puntos vecinos para respetar separaciones reales
+        date_keys = [t["start"].date() for t in dated]
+        if date_keys:
+            today_date = today.date()
+            prev_d = max((d for d in date_keys if d <= today_date), default=date_keys[0])
+            next_d = min((d for d in date_keys if d >= today_date), default=date_keys[-1])
+            x_prev = date_to_x(datetime.combine(prev_d, datetime.min.time()))
+            x_next = date_to_x(datetime.combine(next_d, datetime.min.time()))
+            span = (next_d - prev_d).days or 1
+            ratio_local = (today_date - prev_d).days / span
+            x_today = x_prev + (x_next - x_prev) * ratio_local
+        else:
+            x_today = date_to_x(today)
         # Dial vintage: barras paralelas para real vs plan (más separación si difieren)
         dial_height = 0.55
         dial_w = 0.08
@@ -489,6 +500,8 @@ class GanttTimelineLevel2(Scene):
             today_pct.next_to(today_label, RIGHT, buff=0.15)
         else:
             today_pct = None
+        if "DEBUG_TODAY" in os.environ:
+            print(f"[DEBUG_TODAY] start_min={start_min.date()} end_max={end_max.date()} today={today.date()}")
 
         points = VGroup()
         stems = VGroup()
@@ -599,7 +612,10 @@ class GanttTimelineLevel2(Scene):
                         lit_segments = 1
                     for s in range(lit_segments):
                         t = s / max(1, seg_count - 1)
-                        color = interpolate_color(RED_E, GREEN_B, t)
+                        if t <= 0.5:
+                            color = interpolate_color(RED_E, GREEN_B, t * 2)
+                        else:
+                            color = interpolate_color(GREEN_B, BLUE_E, (t - 0.5) * 2)
                         seg = Rectangle(
                             width=bar_width,
                             height=seg_height,
@@ -676,25 +692,48 @@ class GanttTimelineLevel2(Scene):
             mid_x = (x0 + x1) / 2
 
             seg_width = max(0.01, x1 - x0)
-            seg_color = BLUE_E if i % 2 == 0 else GRAY_E
-            seg = Rectangle(
-                width=seg_width,
-                height=bar_height,
-                stroke_width=0,
-                fill_color=seg_color,
-                fill_opacity=1,
-            ).move_to([mid_x, scale_y, 0])
-            bar.add(seg)
+            days = max(1, delta_days)
+            unit_w = seg_width / days
+            pct_for_span = pct_by_date.get(d1)
+            pct_norm = 1.0 if pct_for_span is None else max(0.0, min(1.0, pct_for_span / 100.0))
+            for d in range(days):
+                t_prog = d / max(1, days - 1)
+                if t_prog <= pct_norm:
+                    if t_prog <= 0.5:
+                        color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
+                    else:
+                        color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
+                    opacity = 1
+                else:
+                    color = GRAY_C
+                    opacity = 0.32
+                seg = Rectangle(
+                    width=unit_w * 0.85,
+                    height=bar_height,
+                    stroke_width=0,
+                    fill_color=color,
+                    fill_opacity=opacity,
+                )
+                seg_x = x0 + (d + 0.5) * unit_w
+                seg.move_to([seg_x, scale_y, 0])
+                bar.add(seg)
 
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
             txt = Text(f"{delta_days}d", font_size=9, color=GRAY_B)
-            txt.next_to(seg, DOWN, buff=0.06)
+            txt.move_to([mid_x, scale_y - 0.28, 0])
             if d1 in pct_by_date:
-                avg_txt = Text(f"Prom {pct_by_date[d1]}%", font_size=10, color=GREEN_C)
-                avg_txt.next_to(seg, UP, buff=0.05)
+                avg_txt = Text(f"{pct_by_date[d1]}%", font_size=10, color=GREEN_C)
+                avg_txt.move_to([mid_x, scale_y + 0.22, 0])
                 deltas.add(VGroup(tick, avg_txt, txt))
             else:
                 deltas.add(VGroup(tick, txt))
+
+            # Fecha en el punto de separación del tramo
+            date_str = d1.strftime("%d/%m")
+            fs = max(7, min(9, seg_width * 3))
+            date_lbl = Text(date_str, font_size=fs, color=GRAY_C)
+            date_lbl.next_to(tick, DOWN, buff=0.03)
+            deltas.add(date_lbl)
 
         if date_keys:
             x_start = date_to_x(datetime.combine(date_keys[0], datetime.min.time()))
@@ -719,12 +758,6 @@ class GanttTimelineLevel2(Scene):
                 today_group = VGroup(today_line, today_tick, today_label, today_pct)
             else:
                 today_group = VGroup(today_line, today_tick, today_label)
-            # Posicionar al inicio de la línea de tiempo para animación final
-            start_x = timeline_left[0] - 0.8
-            cur_x = today_group.get_center()[0]
-            today_group.shift([start_x - cur_x, 0, 0])
-            today_group.set_opacity(0)
-            self.add(today_group)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(FadeIn, stems, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
@@ -733,13 +766,9 @@ class GanttTimelineLevel2(Scene):
             self.play(FadeIn(bar), run_time=0.4)
             self.play(LaggedStartMap(FadeIn, deltas, lag_ratio=0.03), run_time=0.6)
 
-        # Animación de "hoy" al final (sin rebote)
+        # Mostrar "hoy" junto con el resto de elementos
         if today_group:
-            dx = x_today - today_group.get_center()[0]
-            self.play(
-                today_group.animate.shift([dx, 0, 0]).set_opacity(1),
-                run_time=0.4,
-            )
+            self.play(FadeIn(today_group), run_time=0.4)
 
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
