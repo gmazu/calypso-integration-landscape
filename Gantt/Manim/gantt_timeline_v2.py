@@ -409,6 +409,22 @@ class GanttTimelineLevel2(Scene):
             ratio = offset / total
             return interpolate(timeline_left[0], timeline_right[0], ratio)
 
+        # Línea de "hoy"
+        today = datetime.now()
+        if start_min <= today <= end_max:
+            x_today = date_to_x(today)
+            today_line = Line(
+                [x_today, timeline_left[1] - 2.9, 0],
+                [x_today, timeline_left[1] + 2.6, 0],
+                color=RED,
+                stroke_width=2,
+            )
+            today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=12, color=RED)
+            today_label.next_to(today_line, UP, buff=0.1)
+        else:
+            today_line = None
+            today_label = None
+
         points = VGroup()
         stems = VGroup()
         labels = VGroup()
@@ -507,6 +523,8 @@ class GanttTimelineLevel2(Scene):
 
         self.play(Write(header), run_time=1)
         self.play(Create(timeline), run_time=0.8)
+        if today_line:
+            self.play(FadeIn(today_line), FadeIn(today_label), run_time=0.4)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(Create, stems, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
