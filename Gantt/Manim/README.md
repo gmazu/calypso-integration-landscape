@@ -76,3 +76,31 @@ Lista de feriados 2026:
 
 ## Hecho
 - [x] Lectura de XLSX con indentación (alignment.indent) para niveles.
+
+## Integracion con YouTube
+Pasos (API oficial YouTube Data v3):
+1) Crear proyecto en Google Cloud y habilitar YouTube Data API v3.
+2) Configurar pantalla de consentimiento OAuth (agregar usuario de prueba si aplica).
+3) Crear credenciales OAuth "Desktop App" y descargar `client_secret.json`.
+4) Instalar dependencias:
+```
+pip install google-api-python-client google-auth-oauthlib google-auth-httplib2
+```
+5) Usar el script oficial `upload_video.py` (ejemplo de Google) para subir videos.
+
+Comando de ejemplo:
+```
+python upload_video.py \
+  --file="/ruta/a/video.mp4" \
+  --title="Mi Gantt" \
+  --description="Render Manim" \
+  --keywords="gantt,manim" \
+  --category="22" \
+  --privacyStatus="private"
+```
+
+Referencias oficiales:
+```
+https://developers.google.com/youtube/v3/guides/uploading_a_video
+https://developers.google.com/youtube/v3/guides/auth/installed-apps
+```
