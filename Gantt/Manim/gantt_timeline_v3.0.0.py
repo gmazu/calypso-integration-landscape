@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, date
 from pathlib import Path
 import uuid
 import os
+import random
 
 from manim import *
 from openpyxl import load_workbook
@@ -527,35 +528,57 @@ class GanttTimelineLevel2(Scene):
             width=dial_w,
             height=dial_height,
             stroke_width=0,
-            fill_color=RED_E,
+            fill_color=GREEN_E,
             fill_opacity=0.35,
         ).move_to([x_today - dial_gap / 2, scale_y + dial_height / 2, 0])
         dial_plan = Rectangle(
             width=dial_w,
             height=dial_height,
             stroke_width=0,
-            fill_color=RED_A,
+            fill_color=GREEN_A,
             fill_opacity=0.35,
         ).move_to([x_today + dial_gap / 2, scale_y + dial_height / 2, 0])
         today_line = VGroup(dial_real, dial_plan)
         today_tick = Line(
             [x_today, timeline_left[1] - 0.18, 0],
             [x_today, timeline_left[1] + 0.18, 0],
-            color=RED_E,
+            color=GREEN_E,
             stroke_width=1,
         )
-        today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=10, color=RED_E)
-        today_label.next_to(today_line, UP, buff=0.04)
+        today_label = Text(f"HOY {today.strftime('%d/%m')}", font_size=11, color=GREEN_E)
         pct_parts = []
         if avg_all is not None:
-            pct_parts.append(f"Real {avg_all}%")
+            pct_parts.append(f"R {avg_all}%")
         if avg_planned is not None:
-            pct_parts.append(f"Plan {avg_planned}%")
+            pct_parts.append(f"P {avg_planned}%")
         if pct_parts:
-            today_pct = Text(" | ".join(pct_parts), font_size=10, color=RED_E)
-            today_pct.next_to(today_label, RIGHT, buff=0.15)
+            today_pct = Text(" | ".join(pct_parts), font_size=8, color=GREEN_E)
         else:
             today_pct = None
+        today_info = VGroup(today_label, today_pct).arrange(DOWN, buff=0.06, aligned_edge=LEFT)
+        today_info.move_to([timeline_left[0] - 1.0, scale_y + dial_height / 2, 0])
+        today_info_line = VGroup()
+        line_y = scale_y + dial_height / 2
+        line_left = x_today - 0.12
+        line_right = today_info.get_right()[0]
+        line_segs = 10
+        min_opacity = 0.1
+        for s in range(line_segs):
+            t0 = s / line_segs
+            t1 = (s + 1) / line_segs
+            x0 = line_left + (line_right - line_left) * t0
+            x1 = line_left + (line_right - line_left) * t1
+            t_mid = (t0 + t1) / 2
+            opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+            seg = Line([x0, line_y, 0], [x1, line_y, 0], color=GREEN_E, stroke_width=1, stroke_opacity=opacity)
+            today_info_line.add(seg)
+        # punta simple: tres puntos decrecientes hacia la barra (lado de x_today)
+        tip_radii = [0.04, 0.028, 0.018]
+        tip_offsets = [-0.16, -0.07, 0.0]
+        for r, dx in zip(tip_radii, tip_offsets):
+            tip = Dot([line_left + dx, line_y, 0], radius=r, color=GREEN_E)
+            today_info_line.add(tip)
+
         if "DEBUG_TODAY" in os.environ:
             print(f"[DEBUG_TODAY] start_min={start_min.date()} end_max={end_max.date()} today={today.date()}")
 
@@ -563,6 +586,7 @@ class GanttTimelineLevel2(Scene):
         end_points = VGroup()
         end_dates = VGroup()
         connectors = VGroup()
+        connector_ends = VGroup()
         stems_bg = VGroup()
         stems_lit = VGroup()
         labels = VGroup()
@@ -589,28 +613,6 @@ class GanttTimelineLevel2(Scene):
         spacing_scale = 0.85
 
         date_keys = list(grouped.keys())
-        # Conectores inicio-fin en TMD (lineas horizontales con desvanecido)
-        connector_levels = [0.28, 0.48, 0.68, 0.88]
-        for idx, task in enumerate(dated):
-            if task["end"].date() == task["start"].date():
-                continue
-            x_start = date_to_x(task["start"])
-            x_end = date_to_x(task["end"])
-            if x_end < x_start:
-                x_start, x_end = x_end, x_start
-            y = scale_y + connector_levels[idx % len(connector_levels)]
-            segs = 10
-            min_opacity = 0.1
-            for s in range(segs):
-                t0 = s / segs
-                t1 = (s + 1) / segs
-                x0 = x_start + (x_end - x_start) * t0
-                x1 = x_start + (x_end - x_start) * t1
-                t_mid = (t0 + t1) / 2
-                opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
-                seg = Line([x0, y, 0], [x1, y, 0], color=GRAY_B, stroke_width=0.6, stroke_opacity=opacity)
-                connectors.add(seg)
-
         for idx, (key, tasks_for_date) in enumerate(grouped.items()):
             x = date_to_x(tasks_for_date[0]["start"])
             y = timeline_left[1]
@@ -961,6 +963,68 @@ class GanttTimelineLevel2(Scene):
                     seg = Line([x, y0, 0], [x, y1, 0], color=GRAY_B, stroke_width=0.5, stroke_opacity=opacity)
                     date_guides.add(seg)
 
+        # Conectores inicio-fin en TMD (lineas horizontales con desvanecido)
+        def _top_or_scale(group):
+            return group.get_top()[1] if len(group) > 0 else scale_y
+
+        base_y = max(
+            scale_y + 0.18,
+            _top_or_scale(end_dates) + 0.18,
+            _top_or_scale(holiday_marks) + 0.18,
+        )
+        levels_count = max(4, min(10, len(dated)))
+        level_step = 0.18
+        connector_levels = [base_y + i * level_step for i in range(levels_count)]
+
+        for idx, task in enumerate(dated):
+            if task["end"].date() == task["start"].date():
+                continue
+            rng = random.Random(task["id"])
+            x_start = date_to_x(task["start"])
+            x_end = date_to_x(task["end"])
+            if x_end < x_start:
+                x_start, x_end = x_end, x_start
+            y = connector_levels[idx % len(connector_levels)]
+            segs = 10
+            min_opacity = 0.1
+            for s in range(segs):
+                t0 = s / segs
+                t1 = (s + 1) / segs
+                x0 = x_start + (x_end - x_start) * t0
+                x1 = x_start + (x_end - x_start) * t1
+                t_mid = (t0 + t1) / 2
+                opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+                seg = Line([x0, y, 0], [x1, y, 0], color=GRAY_B, stroke_width=0.6, stroke_opacity=opacity)
+                connectors.add(seg)
+            # Marca de inicio: punto en el extremo y bajada suave hasta TMD
+            blob_r = 0.034 + rng.uniform(-0.004, 0.004)
+            start_blob = Dot([x_start, y, 0], radius=blob_r, color=RED_E)
+            drop_segs = 10
+            for s in range(drop_segs):
+                t0 = s / drop_segs
+                t1 = (s + 1) / drop_segs
+                y0 = y + (scale_y - y) * t0
+                y1 = y + (scale_y - y) * t1
+                t_mid = (t0 + t1) / 2
+                opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+                vseg = Line([x_start, y0, 0], [x_start, y1, 0], color=RED_E, stroke_width=0.6, stroke_opacity=opacity)
+                connector_ends.add(vseg)
+            connector_ends.add(start_blob)
+            # Marca de fin: punto en el extremo y bajada suave hasta TMD
+            blob_r = 0.034 + rng.uniform(-0.004, 0.004)
+            end_blob = Dot([x_end, y, 0], radius=blob_r, color=BLUE_D)
+            drop_segs = 10
+            for s in range(drop_segs):
+                t0 = s / drop_segs
+                t1 = (s + 1) / drop_segs
+                y0 = y + (scale_y - y) * t0
+                y1 = y + (scale_y - y) * t1
+                t_mid = (t0 + t1) / 2
+                opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+                vseg = Line([x_end, y0, 0], [x_end, y1, 0], color=BLUE_D, stroke_width=0.6, stroke_opacity=opacity)
+                connector_ends.add(vseg)
+            connector_ends.add(end_blob)
+
         if undated:
             undated_title = Text("Sin fechas", font_size=16, color=GRAY_B)
             undated_lines = VGroup(
@@ -977,14 +1041,16 @@ class GanttTimelineLevel2(Scene):
         today_group = None
         if today_line:
             if today_pct:
-                today_group = VGroup(today_line, today_tick, today_label, today_pct)
+                today_group = VGroup(today_line, today_tick, today_info_line, today_info)
             else:
-                today_group = VGroup(today_line, today_tick, today_label)
+                today_group = VGroup(today_line, today_tick, today_info_line, today_info)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(FadeIn, stems_bg, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
         if connectors:
             self.play(LaggedStartMap(FadeIn, connectors, lag_ratio=0.01), run_time=0.6)
+        if connector_ends:
+            self.play(LaggedStartMap(FadeIn, connector_ends, lag_ratio=0.02), run_time=0.5)
         if end_points:
             self.play(LaggedStartMap(FadeIn, end_points, lag_ratio=0.05), run_time=0.5)
             self.play(LaggedStartMap(FadeIn, end_dates, lag_ratio=0.05), run_time=0.5)
