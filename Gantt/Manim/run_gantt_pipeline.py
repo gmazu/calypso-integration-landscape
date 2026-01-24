@@ -46,6 +46,10 @@ def build_manim_args(args: argparse.Namespace) -> list[str]:
         if not qual.startswith("-"):
             qual = f"-{qual}"
         cmd.append(qual)
+    if args.resolution:
+        cmd += ["-r", args.resolution]
+    if args.fps:
+        cmd += ["--fps", str(args.fps)]
     if args.preview:
         cmd.append("-p")
     cmd += [str(Path(__file__).with_name("gantt_timeline_v3.0.0.py")), args.scene]
@@ -89,6 +93,15 @@ def main() -> int:
         "--quality",
         default="ql",
         help="Preset de calidad Manim sin guion (ej: ql, qm, qh, pql).",
+    )
+    parser.add_argument(
+        "--resolution",
+        help="Resolución Manim en formato W,H (ej: 3840,2160).",
+    )
+    parser.add_argument(
+        "--fps",
+        type=int,
+        help="FPS para render (ej: 60).",
     )
     parser.add_argument(
         "--preview",
