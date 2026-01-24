@@ -5,7 +5,7 @@ import ast
 import sys
 import textwrap
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from pathlib import Path
 import uuid
 import os
@@ -43,6 +43,58 @@ def format_percent(value) -> str:
     if not text:
         return ""
     return text if "%" in text else f"{text}%"
+
+
+def _as_date(value):
+    if isinstance(value, datetime):
+        return value.date()
+    return value
+
+
+def business_days_in_span(start_date, end_date):
+    """Return business days in (start_date, end_date] excluding Sat/Sun."""
+    start_d = _as_date(start_date)
+    end_d = _as_date(end_date)
+    days = []
+    total = (end_d - start_d).days
+    for i in range(1, total + 1):
+        d = start_d + timedelta(days=i)
+        if d.weekday() < 5:
+            days.append(d)
+    return days
+
+
+HOLIDAYS_2026 = {
+    date(2026, 1, 1),
+    date(2026, 4, 3),
+    date(2026, 4, 4),
+    date(2026, 5, 1),
+    date(2026, 5, 21),
+    date(2026, 6, 21),
+    date(2026, 6, 29),
+    date(2026, 7, 16),
+    date(2026, 8, 15),
+    date(2026, 9, 18),
+    date(2026, 9, 19),
+    date(2026, 10, 12),
+    date(2026, 10, 31),
+    date(2026, 11, 1),
+    date(2026, 12, 8),
+    date(2026, 12, 25),
+}
+
+
+def holidays_in_span(start_date, end_date, holidays):
+    """Return holidays in (start_date, end_date] that fall on weekdays."""
+    start_d = _as_date(start_date)
+    end_d = _as_date(end_date)
+    days = []
+    total = (end_d - start_d).days
+    for i in range(1, total + 1):
+        d = start_d + timedelta(days=i)
+        if d in holidays and d.weekday() < 5:
+            days.append(d)
+    return days
 
 
 def load_tasks_from_xlsx(path: Path) -> list[list]:
@@ -399,7 +451,7 @@ class GanttTimelineLevel2(Scene):
 
         if dated:
             start_min = min(t["start"] for t in dated)
-            end_max = max(t["start"] for t in dated)
+            end_max = max(t["end"] for t in dated)
         else:
             start_min = datetime.now()
             end_max = datetime.now()
@@ -410,7 +462,11 @@ class GanttTimelineLevel2(Scene):
             ratio = offset / total
             return interpolate(timeline_left[0], timeline_right[0], ratio)
 
-        scale_y = timeline_left[1] - 3.2
+        scale_y = timeline_left[1] - 3.45
+        tlu_label = Text("TLU", font_size=12, color=GRAY_B)
+        tlu_label.next_to(timeline_left, LEFT, buff=0.4)
+        tmd_label = Text("TMD", font_size=12, color=GRAY_B)
+        tmd_label.next_to([timeline_left[0], scale_y, 0], LEFT, buff=0.4)
 
         # Fecha de hoy (ajuste de año solo si cae dentro del rango del Gantt)
         today = datetime.now()
@@ -485,10 +541,10 @@ class GanttTimelineLevel2(Scene):
         today_tick = Line(
             [x_today, timeline_left[1] - 0.18, 0],
             [x_today, timeline_left[1] + 0.18, 0],
-            color=RED,
+            color=RED_E,
             stroke_width=1,
         )
-        today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=10, color=RED)
+        today_label = Text(f"Hoy {today.strftime('%d/%m')}", font_size=10, color=RED_E)
         today_label.next_to(today_line, UP, buff=0.04)
         pct_parts = []
         if avg_all is not None:
@@ -496,7 +552,7 @@ class GanttTimelineLevel2(Scene):
         if avg_planned is not None:
             pct_parts.append(f"Plan {avg_planned}%")
         if pct_parts:
-            today_pct = Text(" | ".join(pct_parts), font_size=10, color=RED)
+            today_pct = Text(" | ".join(pct_parts), font_size=10, color=RED_E)
             today_pct.next_to(today_label, RIGHT, buff=0.15)
         else:
             today_pct = None
@@ -504,6 +560,9 @@ class GanttTimelineLevel2(Scene):
             print(f"[DEBUG_TODAY] start_min={start_min.date()} end_max={end_max.date()} today={today.date()}")
 
         points = VGroup()
+        end_points = VGroup()
+        end_dates = VGroup()
+        connectors = VGroup()
         stems_bg = VGroup()
         stems_lit = VGroup()
         labels = VGroup()
@@ -518,16 +577,45 @@ class GanttTimelineLevel2(Scene):
             key = task["start"].date()
             grouped.setdefault(key, []).append(task)
 
+        end_grouped = OrderedDict()
+        for task in dated:
+            if task["end"].date() == task["start"].date():
+                continue
+            end_key = task["end"].date()
+            end_grouped.setdefault(end_key, []).append(task)
+
         above_idx = 0
         below_idx = 0
         spacing_scale = 0.85
 
         date_keys = list(grouped.keys())
+        # Conectores inicio-fin en TMD (lineas horizontales con desvanecido)
+        connector_levels = [0.28, 0.48, 0.68, 0.88]
+        for idx, task in enumerate(dated):
+            if task["end"].date() == task["start"].date():
+                continue
+            x_start = date_to_x(task["start"])
+            x_end = date_to_x(task["end"])
+            if x_end < x_start:
+                x_start, x_end = x_end, x_start
+            y = scale_y + connector_levels[idx % len(connector_levels)]
+            segs = 10
+            min_opacity = 0.1
+            for s in range(segs):
+                t0 = s / segs
+                t1 = (s + 1) / segs
+                x0 = x_start + (x_end - x_start) * t0
+                x1 = x_start + (x_end - x_start) * t1
+                t_mid = (t0 + t1) / 2
+                opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+                seg = Line([x0, y, 0], [x1, y, 0], color=GRAY_B, stroke_width=0.6, stroke_opacity=opacity)
+                connectors.add(seg)
+
         for idx, (key, tasks_for_date) in enumerate(grouped.items()):
             x = date_to_x(tasks_for_date[0]["start"])
             y = timeline_left[1]
 
-            point = Dot([x, y, 0], radius=0.065, color=BLUE_D)
+            point = Dot([x, y, 0], radius=0.065, color=RED_E)
 
             above = idx % 2 == 0
             if above:
@@ -538,7 +626,7 @@ class GanttTimelineLevel2(Scene):
                 below_idx += 1
 
             date_text = tasks_for_date[0]["start"].strftime("%d/%m")
-            date_label = Text(date_text, font_size=12, color=BLUE_D)
+            date_label = Text(date_text, font_size=12, color=RED_E)
             date_label.next_to(point, DOWN if above else UP, buff=0.1)
 
             offsets = [1.0, 1.5, 2.0]
@@ -718,27 +806,47 @@ class GanttTimelineLevel2(Scene):
             if pcts:
                 pct_by_date[key] = round(sum(pcts) / len(pcts))
 
+        # Marcar fechas de fin en la escala inferior (solo punto + fecha)
+        end_keys_sorted = sorted(end_grouped.keys())
+        for idx, end_key in enumerate(end_keys_sorted):
+            x_end = date_to_x(datetime.combine(end_key, datetime.min.time()))
+            y = scale_y
+            end_point = Dot([x_end, y, 0], radius=0.05, color=BLUE_D)
+            end_label = Text(end_key.strftime("%d/%m"), font_size=11, color=BLUE_D)
+            if idx % 2 == 0:
+                end_label.next_to(end_point, DOWN, buff=0.08)
+            else:
+                end_label.next_to(end_point, UP, buff=0.08)
+            end_points.add(end_point)
+            end_dates.add(end_label)
+
         # Escala inferior estilo "mapa": barra segmentada con dias por tramo
         bar_height = 0.15
         bar_bg = VGroup()
         bar_lit = VGroup()
         bar_full = VGroup()
         date_guides = VGroup()
-        for i in range(1, len(date_keys)):
-            d0 = date_keys[i - 1]
-            d1 = date_keys[i]
-            delta_days = (d1 - d0).days
+        holiday_marks = VGroup()
+        scale_keys = sorted(set(date_keys + [t["end"].date() for t in dated]))
+        for i in range(1, len(scale_keys)):
+            d0 = scale_keys[i - 1]
+            d1 = scale_keys[i]
+            business_days = business_days_in_span(d0, d1)
+            biz_count = len(business_days)
+            holiday_days = holidays_in_span(d0, d1, HOLIDAYS_2026)
+            holiday_set = set(holiday_days)
+            holiday_count = len(holiday_days)
             x0 = date_to_x(datetime.combine(d0, datetime.min.time()))
             x1 = date_to_x(datetime.combine(d1, datetime.min.time()))
             mid_x = (x0 + x1) / 2
 
             seg_width = max(0.01, x1 - x0)
-            days = max(1, delta_days)
-            unit_w = seg_width / days
+            days_for_layout = max(1, biz_count)
+            unit_w = seg_width / days_for_layout
             pct_for_span = pct_by_date.get(d1)
             pct_norm = 0.0 if pct_for_span is None else max(0.0, min(1.0, pct_for_span / 100.0))
-            for d in range(days):
-                t_prog = d / max(1, days - 1)
+            if biz_count == 0:
+                t_prog = 0.0
                 # Fondo apagado
                 bg_seg = Rectangle(
                     width=unit_w * 0.85,
@@ -747,53 +855,93 @@ class GanttTimelineLevel2(Scene):
                     fill_color=GRAY_C,
                     fill_opacity=0.32,
                 )
-                bg_seg.move_to([x0 + (d + 0.5) * unit_w, scale_y, 0])
+                bg_seg.move_to([x0 + 0.5 * unit_w, scale_y, 0])
                 bar_bg.add(bg_seg)
 
-                # Full test (100%)
-                if t_prog <= 0.5:
-                    full_color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
-                else:
-                    full_color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
                 full_seg = Rectangle(
                     width=unit_w * 0.85,
                     height=bar_height,
                     stroke_width=0,
-                    fill_color=full_color,
+                    fill_color=interpolate_color(RED_E, GREEN_B, t_prog * 2),
                     fill_opacity=1,
                 )
-                full_seg.move_to([x0 + (d + 0.5) * unit_w, scale_y, 0])
+                full_seg.move_to([x0 + 0.5 * unit_w, scale_y, 0])
                 bar_full.add(full_seg)
+            else:
+                for idx_day, day in enumerate(business_days):
+                    seg_x = x0 + (idx_day + 0.5) * unit_w
+                    if day in holiday_set:
+                        holiday_label = Text(day.strftime("%d/%m"), font_size=9, color=RED_E)
+                        if idx_day % 2 == 0:
+                            holiday_label.next_to([seg_x, scale_y, 0], DOWN, buff=0.08)
+                        else:
+                            holiday_label.next_to([seg_x, scale_y, 0], UP, buff=0.08)
+                        holiday_marks.add(holiday_label)
+                        continue
 
-                if pct_norm > 0 and t_prog <= pct_norm:
+                    t_prog = idx_day / max(1, biz_count - 1)
+                    # Fondo apagado
+                    bg_seg = Rectangle(
+                        width=unit_w * 0.85,
+                        height=bar_height,
+                        stroke_width=0,
+                        fill_color=GRAY_C,
+                        fill_opacity=0.32,
+                    )
+                    bg_seg.move_to([seg_x, scale_y, 0])
+                    bar_bg.add(bg_seg)
+
+                    # Full test (100%)
                     if t_prog <= 0.5:
-                        color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
+                        full_color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
                     else:
-                        color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
-                    opacity = 1
-                else:
-                    color = None
-                    opacity = 0
-                seg = Rectangle(
-                    width=unit_w * 0.85,
-                    height=bar_height,
-                    stroke_width=0,
-                    fill_color=color if color else GRAY_C,
-                    fill_opacity=opacity,
-                )
-                seg_x = x0 + (d + 0.5) * unit_w
-                seg.move_to([seg_x, scale_y, 0])
-                if opacity > 0:
-                    bar_lit.add(seg)
+                        full_color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
+                    full_seg = Rectangle(
+                        width=unit_w * 0.85,
+                        height=bar_height,
+                        stroke_width=0,
+                        fill_color=full_color,
+                        fill_opacity=1,
+                    )
+                    full_seg.move_to([seg_x, scale_y, 0])
+                    bar_full.add(full_seg)
+
+                    if pct_norm > 0 and t_prog <= pct_norm:
+                        if t_prog <= 0.5:
+                            color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
+                        else:
+                            color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
+                        opacity = 1
+                    else:
+                        color = None
+                        opacity = 0
+                    seg = Rectangle(
+                        width=unit_w * 0.85,
+                        height=bar_height,
+                        stroke_width=0,
+                        fill_color=color if color else GRAY_C,
+                        fill_opacity=opacity,
+                    )
+                    seg.move_to([seg_x, scale_y, 0])
+                    if opacity > 0:
+                        bar_lit.add(seg)
 
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
-            txt = Text(f"{delta_days}d", font_size=9, color=GRAY_B)
-            txt.move_to([mid_x, scale_y - 0.28, 0])
-            deltas.add(VGroup(tick, txt))
+            if holiday_count > 0:
+                base = Text(f"{biz_count}d", font_size=9, color=GRAY_B)
+                minus = Text(f"-{holiday_count}", font_size=9, color=RED_E)
+                label_group = VGroup(base, minus).arrange(RIGHT, buff=0.02)
+                label_group.move_to([mid_x, scale_y - 0.28, 0])
+                deltas.add(VGroup(tick, label_group))
+            else:
+                txt = Text(f"{biz_count}d", font_size=9, color=GRAY_B)
+                txt.move_to([mid_x, scale_y - 0.28, 0])
+                deltas.add(VGroup(tick, txt))
 
-        if date_keys:
-            x_start = date_to_x(datetime.combine(date_keys[0], datetime.min.time()))
-            x_end = date_to_x(datetime.combine(date_keys[-1], datetime.min.time()))
+
+        if scale_keys:
+            x_start = date_to_x(datetime.combine(scale_keys[0], datetime.min.time()))
+            x_end = date_to_x(datetime.combine(scale_keys[-1], datetime.min.time()))
             deltas.add(Line([x_end, scale_y + 0.08, 0], [x_end, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1))
             # Guías finas desde la fecha superior hacia la escala inferior
             for idx, d in enumerate(date_keys):
@@ -825,6 +973,7 @@ class GanttTimelineLevel2(Scene):
 
         self.play(Write(header), run_time=1)
         self.play(Create(timeline), run_time=0.8)
+        self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
         today_group = None
         if today_line:
             if today_pct:
@@ -834,12 +983,19 @@ class GanttTimelineLevel2(Scene):
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(FadeIn, stems_bg, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
+        if connectors:
+            self.play(LaggedStartMap(FadeIn, connectors, lag_ratio=0.01), run_time=0.6)
+        if end_points:
+            self.play(LaggedStartMap(FadeIn, end_points, lag_ratio=0.05), run_time=0.5)
+            self.play(LaggedStartMap(FadeIn, end_dates, lag_ratio=0.05), run_time=0.5)
         self.play(LaggedStartMap(FadeIn, labels, lag_ratio=0.05), run_time=1.2)
         if deltas:
             self.play(FadeIn(bar_bg), run_time=0.4)
             self.play(LaggedStartMap(FadeIn, deltas, lag_ratio=0.03), run_time=0.6)
         if date_guides:
             self.play(LaggedStartMap(FadeIn, date_guides, lag_ratio=0.02), run_time=0.4)
+        if holiday_marks:
+            self.play(LaggedStartMap(FadeIn, holiday_marks, lag_ratio=0.05), run_time=0.5)
 
         # Mostrar "hoy" junto con el resto de elementos
         if today_group:

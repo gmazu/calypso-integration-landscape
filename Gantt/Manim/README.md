@@ -37,7 +37,6 @@ python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline
 
 ## Pendientes
 - [ ] Definir y documentar el criterio exacto de “contexto” al filtrar por ID.
-- [ ] Esperar VB antes de hacer cambios; agregar esto en la sección de contexto.
 - [x] Implementar filtros internos solo-XLSX con `--nivel` y `--id` (sin `--scope`).
 - [x] Implementar salida de estadística previa para evitar escenas saturadas.
 - [x] Crear `gantt_timeline_v2.py` (mantener `gantt_timeline.py` intacto).
@@ -48,6 +47,32 @@ python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline
 - [ ] Agregar curva de rendimiento (cálculo de velocidad de avance) y pendiente para estimar fecha fin; la proyección debe ser ≤ fecha fin.
 - [ ] Subir una copia del video a una cuenta privada de YouTube (pendiente de crearla).
 - [ ] Ajustar ecualizador de % avance: 100% debe llegar al tope; sin bordes, barras horizontales estilo CRT, con gradiente cromático de rojo→verde y 0% en blanco (ref: `Images/940fafb26928fac30b9ce90e60eb67f7.jpg`).
+
+## Contexto
+- [ ] Esperar y pedir VB antes de hacer cambios.
+
+## Calendario feriados 2026 (Chile)
+Fuente:
+```
+https://www.gob.cl/noticias/feriados-2026-revisa-cuantos-habra-y-cuales-son-irrenunciables/
+```
+Lista de feriados 2026:
+- 2026-01-01: Año Nuevo (irrenunciable)
+- 2026-04-03: Viernes Santo
+- 2026-04-04: Sábado Santo
+- 2026-05-01: Día del Trabajo (irrenunciable)
+- 2026-05-21: Día de las Glorias Navales
+- 2026-06-21: Día Nacional de los Pueblos Indígenas
+- 2026-06-29: San Pedro y San Pablo
+- 2026-07-16: Día de la Virgen del Carmen
+- 2026-08-15: Asunción de la Virgen
+- 2026-09-18: Independencia Nacional (irrenunciable)
+- 2026-09-19: Día de las Glorias del Ejército (irrenunciable)
+- 2026-10-12: Encuentro de Dos Mundos
+- 2026-10-31: Día Nacional de las Iglesias Evangélicas
+- 2026-11-01: Día de Todos los Santos
+- 2026-12-08: Inmaculada Concepción
+- 2026-12-25: Navidad (irrenunciable)
 
 ## Hecho
 - [x] Lectura de XLSX con indentación (alignment.indent) para niveles.

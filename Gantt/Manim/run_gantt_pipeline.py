@@ -27,7 +27,7 @@ def extract_filter_args(argv: list[str]) -> tuple[list[str], list[str]]:
 
 
 def build_filter_args(args: argparse.Namespace, filter_args: list[str]) -> list[str]:
-    cmd = [sys.executable, str(Path(__file__).with_name("gantt_timeline_v2.py"))]
+    cmd = [sys.executable, str(Path(__file__).with_name("gantt_timeline_v3.0.0.py"))]
     cmd += ["--xlsx", str(args.xlsx)]
     cmd += filter_args
     if args.expand:
@@ -48,7 +48,7 @@ def build_manim_args(args: argparse.Namespace) -> list[str]:
         cmd.append(qual)
     if args.preview:
         cmd.append("-p")
-    cmd += [str(Path(__file__).with_name("gantt_timeline_v2.py")), args.scene]
+    cmd += [str(Path(__file__).with_name("gantt_timeline_v3.0.0.py")), args.scene]
     return cmd
 
 
@@ -140,7 +140,7 @@ def main() -> int:
     if result.returncode != 0:
         return result.returncode
 
-    media_root = Path(__file__).with_name("media") / "videos" / "gantt_timeline_v2"
+    media_root = Path(__file__).with_name("media") / "videos" / "gantt_timeline_v3.0.0"
     latest = find_latest_mp4(media_root)
     if latest:
         prune_other_mp4s(latest)
