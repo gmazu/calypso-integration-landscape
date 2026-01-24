@@ -997,8 +997,25 @@ class GanttTimelineLevel2(Scene):
                 seg = Line([x0, y, 0], [x1, y, 0], color=GRAY_B, stroke_width=0.6, stroke_opacity=opacity)
                 connectors.add(seg)
             # Marca de inicio: punto en el extremo y bajada suave hasta TMD
-            blob_r = 0.034 + rng.uniform(-0.004, 0.004)
-            start_blob = Dot([x_start, y, 0], radius=blob_r, color=RED_E)
+            def star_burst(cx, cy, color, jitter):
+                star = VGroup()
+                base_r = 0.034 + jitter.uniform(-0.004, 0.004)
+                steps = 5
+                for direction in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                    dx, dy = direction
+                    for i in range(1, steps + 1):
+                        t = i / steps
+                        radius = base_r * (0.55 - 0.35 * t)
+                        opacity = 0.75 - 0.6 * t
+                        offset = base_r * 2.4 * t
+                        x = cx + dx * offset
+                        y = cy + dy * offset
+                        star.add(
+                            Dot([x, y, 0], radius=max(0.006, radius), color=color).set_opacity(opacity)
+                        )
+                return star
+
+            start_blob = star_burst(x_start, y, RED_E, rng)
             drop_segs = 10
             for s in range(drop_segs):
                 t0 = s / drop_segs
@@ -1011,8 +1028,7 @@ class GanttTimelineLevel2(Scene):
                 connector_ends.add(vseg)
             connector_ends.add(start_blob)
             # Marca de fin: punto en el extremo y bajada suave hasta TMD
-            blob_r = 0.034 + rng.uniform(-0.004, 0.004)
-            end_blob = Dot([x_end, y, 0], radius=blob_r, color=BLUE_D)
+            end_blob = star_burst(x_end, y, BLUE_D, rng)
             drop_segs = 10
             for s in range(drop_segs):
                 t0 = s / drop_segs
