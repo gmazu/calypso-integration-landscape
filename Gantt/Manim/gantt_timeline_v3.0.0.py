@@ -466,7 +466,7 @@ class GanttTimelineLevel2(Scene):
         scale_y = timeline_left[1] - 3.45
         tlu_label = Text("TLU", font_size=12, color=GRAY_B)
         tlu_label.next_to(timeline_left, LEFT, buff=0.4)
-        tmd_label = Text("TMD", font_size=12, color=GRAY_B)
+        tmd_label = Text("TLD", font_size=12, color=GRAY_B)
         tmd_label.next_to([timeline_left[0], scale_y, 0], LEFT, buff=0.4)
 
         # Fecha de hoy (ajuste de año solo si cae dentro del rango del Gantt)
@@ -636,7 +636,7 @@ class GanttTimelineLevel2(Scene):
                 offsets = [o * spacing_scale for o in offsets]
             else:
                 offsets = [stem_len + 0.2 * spacing_scale]
-            x_offsets = [0.45, -0.45, 0.9, -0.9, 1.35, -1.35]
+            x_offsets = [0.05, -0.05, 0.12, -0.12, 0.2, -0.2]
             for t_idx, task in enumerate(tasks_for_date):
                 offset = offsets[t_idx] if t_idx < len(offsets) else offsets[-1]
                 target_y = y + (offset if above else -offset)
@@ -652,9 +652,9 @@ class GanttTimelineLevel2(Scene):
                 x_shift = x_offsets[t_idx] if t_idx < len(x_offsets) else x_offsets[-1]
                 text_block.shift(RIGHT * x_shift)
                 if target_y >= y:
-                    text_block.shift(UP * 0.35)
+                    text_block.shift(UP * 0.15)
                 else:
-                    text_block.shift(DOWN * 0.35)
+                    text_block.shift(DOWN * 0.15)
                 labels.add(text_block)
 
                 # Barra vertical tipo ecualizador (segmentos horizontales)
@@ -950,7 +950,7 @@ class GanttTimelineLevel2(Scene):
                 x = date_to_x(datetime.combine(d, datetime.min.time()))
                 # Guía con desvanecido en el centro
                 y_top = timeline_left[1]
-                y_bottom = scale_y
+                y_bottom = scale_y - 0.28
                 segs = 7
                 min_opacity = 0.1
                 for s in range(segs):
