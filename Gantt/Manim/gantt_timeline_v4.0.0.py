@@ -458,7 +458,7 @@ class GanttTimelineLevel2(Scene):
 
         title = Text(title_text, font_size=28, weight=BOLD)
         subtitle = Text(subtitle_text, font_size=16, color=GRAY_B)
-        header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_edge(UP, buff=0.4)
+        header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_corner(UL, buff=0.4)
 
         timeline_left = LEFT * 5.5 + DOWN * 0.2
         timeline_right = RIGHT * 5.5 + DOWN * 0.2
@@ -1187,7 +1187,7 @@ class GanttTimelineCircular(ThreeDScene):
 
         title = Text(title_text, font_size=26, weight=BOLD)
         subtitle = Text(subtitle_text, font_size=16, color=GRAY_B)
-        header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_edge(UP, buff=0.4)
+        header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_corner(UL, buff=0.4)
 
         outer = Arc(
             radius=3.2,

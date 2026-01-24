@@ -27,7 +27,8 @@ def extract_filter_args(argv: list[str]) -> tuple[list[str], list[str]]:
 
 
 def build_filter_args(args: argparse.Namespace, filter_args: list[str]) -> list[str]:
-    cmd = [sys.executable, str(Path(__file__).with_name("gantt_timeline_v3.0.0.py"))]
+    script_path = resolve_script_path()
+    cmd = [sys.executable, str(script_path)]
     cmd += ["--xlsx", str(args.xlsx)]
     cmd += filter_args
     if args.expand:
@@ -52,7 +53,7 @@ def build_manim_args(args: argparse.Namespace) -> list[str]:
         cmd += ["--fps", str(args.fps)]
     if args.preview:
         cmd.append("-p")
-    cmd += [str(Path(__file__).with_name("gantt_timeline_v3.0.0.py")), args.scene]
+    cmd += [str(resolve_script_path()), args.scene]
     return cmd
 
 
@@ -70,6 +71,29 @@ def prune_other_mp4s(latest: Path) -> None:
                 p.unlink()
             except OSError:
                 pass
+
+
+def resolve_script_path() -> Path:
+    """Lee run_gantt_pipeline.parametros y retorna el script Manim a usar."""
+    cfg_path = Path(__file__).with_name("run_gantt_pipeline.parametros")
+    if not cfg_path.exists():
+        return Path(__file__).with_name("gantt_timeline_v3.0.0.py")
+    try:
+        raw = cfg_path.read_text(encoding="utf-8")
+    except OSError:
+        return Path(__file__).with_name("gantt_timeline_v3.0.0.py")
+    script_name = None
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("script:"):
+            _, value = line.split(":", 1)
+            script_name = value.strip()
+            break
+    if not script_name:
+        return Path(__file__).with_name("gantt_timeline_v3.0.0.py")
+    return Path(__file__).with_name(script_name)
 
 
 def main() -> int:

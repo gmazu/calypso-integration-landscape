@@ -41,6 +41,9 @@ python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline
 - [x] Implementar salida de estadística previa para evitar escenas saturadas.
 - [x] Crear `gantt_timeline_v2.py` (mantener `gantt_timeline.py` intacto).
 - [ ] Implementar backup del XLSX junto al MP4 con timestamp y mismo nombre base.
+- [ ] Agregar torta con % de avances.
+- [ ] Agregar panel con días totales disponibles y días totales de fines de semana y feriados.
+- [ ] Achicar el tamaño de las etiquetas de los días (rojos y azules).
 - [ ] Agregar líneas de tiempo finales (inicio→fin) arriba en la línea superior.
 - [ ] Poner nombre/etiqueta a las líneas de tiempo superior e inferior.
 - [ ] Hacer pruebas (casos con filtros `--id/--nivel/--expand`).
