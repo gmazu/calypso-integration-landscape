@@ -460,6 +460,61 @@ class GanttTimelineLevel2(Scene):
         subtitle = Text(subtitle_text, font_size=16, color=GRAY_B)
         header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_corner(UL, buff=0.4)
 
+        # Contador estilo "flip" con la fecha/hora actual (estático por ahora)
+        now = datetime.now()
+        counter_labels = ["DAYS", "HOURS", "MINUTES", "SECONDS"]
+        counter_values = [
+            f"{now.day:02d}",
+            f"{now.hour:02d}",
+            f"{now.minute:02d}",
+            f"{now.second:02d}",
+        ]
+        counter_boxes = VGroup()
+        for label, value in zip(counter_labels, counter_values):
+            box = RoundedRectangle(
+                width=0.88,
+                height=0.56,
+                corner_radius=0.06,
+                stroke_width=1,
+                stroke_color=GRAY_D,
+                fill_color=BLACK,
+                fill_opacity=0.35,
+            )
+            # División central tipo reloj de aeropuerto (prepara animación de "flip")
+            mid_y = box.get_center()[1]
+            split_line = Line(
+                [box.get_left()[0], mid_y, 0],
+                [box.get_right()[0], mid_y, 0],
+                color=GRAY_C,
+                stroke_width=1,
+                stroke_opacity=0.6,
+            )
+            # Mitad superior/inferior con leve contraste
+            top_mask = Rectangle(
+                width=box.width,
+                height=box.height / 2,
+                stroke_width=0,
+                fill_color=BLACK,
+                fill_opacity=0.22,
+            ).move_to([box.get_center()[0], mid_y + box.height / 4, 0])
+            bottom_mask = Rectangle(
+                width=box.width,
+                height=box.height / 2,
+                stroke_width=0,
+                fill_color=BLACK,
+                fill_opacity=0.38,
+            ).move_to([box.get_center()[0], mid_y - box.height / 4, 0])
+
+            value_text = Text(value, font_size=20, weight=BOLD, color=WHITE)
+            value_text.move_to(box.get_center() + DOWN * 0.03)
+            label_text = Text(label, font_size=8, color=GRAY_B)
+            label_text.next_to(box, UP, buff=0.06)
+            group = VGroup(label_text, box, top_mask, bottom_mask, split_line, value_text)
+            counter_boxes.add(group)
+        counter_boxes.arrange(RIGHT, buff=0.22, aligned_edge=DOWN)
+        counter_boxes.to_corner(UR, buff=0.4)
+        counter_boxes.shift(DOWN * 0.02)
+
         timeline_left = LEFT * 5.5 + DOWN * 0.2
         timeline_right = RIGHT * 5.5 + DOWN * 0.2
         timeline = Line(timeline_left, timeline_right, color=GRAY_B, stroke_width=4)
@@ -1106,6 +1161,7 @@ class GanttTimelineLevel2(Scene):
             undated_block = VGroup()
 
         self.play(Write(header), run_time=1)
+        self.play(FadeIn(counter_boxes), run_time=0.6)
         self.play(FadeIn(panel_group), run_time=0.6)
         self.play(Create(timeline), run_time=0.8)
         self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
