@@ -1141,8 +1141,13 @@ class GanttTimelineLevel2(Scene):
         self.play(Write(header), run_time=1)
         self.play(FadeIn(counter_boxes), run_time=0.6)
 
-        # Animacion: avanzar desde 06/01 hasta hoy, solo por dias
-        def _flip_value(block: dict[str, object], new_value: str, run_time: float) -> None:
+        # Animacion: avanzar desde 06/01 hasta hoy, solo por dias (con linea verde)
+        def _flip_value(
+            block: dict[str, object],
+            new_value: str,
+            run_time: float,
+            extra_anims: list[Animation] | None = None,
+        ) -> None:
             old_card: VGroup = block["card"]  # type: ignore[assignment]
             drop = 0.16
             new_text = Text(new_value, font_size=18, weight=BOLD, color=WHITE)
@@ -1157,28 +1162,17 @@ class GanttTimelineLevel2(Scene):
             new_card.move_to(old_card.get_center() + UP * drop)
             new_card.set_opacity(0)
             self.add(new_card)
-            self.play(
+            anims = [
                 old_card.animate.shift(DOWN * drop).set_opacity(0),
                 new_card.animate.shift(DOWN * drop).set_opacity(1),
-                run_time=run_time,
-            )
+            ]
+            if extra_anims:
+                anims.extend(extra_anims)
+            self.play(*anims, run_time=run_time)
             block["group"].remove(old_card)  # type: ignore[call-arg]
             self.remove(old_card)
             block["group"].add(new_card)  # type: ignore[call-arg]
             block["card"] = new_card
-
-        days_to_advance = (today_dt.date() - start_date).days
-        flip_time = 0.08
-        if days_to_advance > 0:
-            for _ in range(days_to_advance):
-                next_date = current_date + timedelta(days=1)
-                _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time)
-                if next_date.month != current_date.month:
-                    _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
-                if next_date.year != current_date.year:
-                    _flip_value(counter_blocks[2], f"{next_date.year // 100:02d}", flip_time)
-                    _flip_value(counter_blocks[3], f"{next_date.year % 100:02d}", flip_time)
-                current_date = next_date
         self.play(Create(timeline), run_time=0.8)
         self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
         today_group = None
@@ -1224,6 +1218,34 @@ class GanttTimelineLevel2(Scene):
 
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
+
+        # Linea de tiempo verde + avance sincronizado con el reloj
+        x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
+        progress_line = Line(
+            [x_start, timeline_left[1], 0],
+            [x_start, timeline_left[1], 0],
+            color=GREEN_E,
+            stroke_width=4,
+        )
+        self.play(FadeIn(progress_line), run_time=0.3)
+
+        days_to_advance = (today_dt.date() - start_date).days
+        flip_time = 0.08
+        if days_to_advance > 0:
+            for _ in range(days_to_advance):
+                next_date = current_date + timedelta(days=1)
+                new_x = date_to_x(datetime.combine(next_date, datetime.min.time()))
+                line_anim = progress_line.animate.put_start_and_end_on(
+                    [x_start, timeline_left[1], 0],
+                    [new_x, timeline_left[1], 0],
+                )
+                _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time, [line_anim])
+                if next_date.month != current_date.month:
+                    _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
+                if next_date.year != current_date.year:
+                    _flip_value(counter_blocks[2], f"{next_date.year // 100:02d}", flip_time)
+                    _flip_value(counter_blocks[3], f"{next_date.year % 100:02d}", flip_time)
+                current_date = next_date
 
         self.wait(2)
 
