@@ -460,20 +460,23 @@ class GanttTimelineLevel2(Scene):
         subtitle = Text(subtitle_text, font_size=16, color=GRAY_B)
         header = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_corner(UL, buff=0.4)
 
-        # Contador estilo "flip" con la fecha/hora actual (estático por ahora)
-        now = datetime.now()
-        counter_labels = ["DAYS", "HOURS", "MINUTES", "SECONDS"]
+        # Contador estilo "flip" con fecha (animable)
+        today_dt = datetime.now()
+        start_date = date(today_dt.year, 1, 6)
+        current_date = start_date
+        counter_labels = ["DIA", "MES", "ANO", "ANO"]
         counter_values = [
-            f"{now.day:02d}",
-            f"{now.hour:02d}",
-            f"{now.minute:02d}",
-            f"{now.second:02d}",
+            f"{current_date.day:02d}",
+            f"{current_date.month:02d}",
+            f"{current_date.year // 100:02d}",
+            f"{current_date.year % 100:02d}",
         ]
         counter_boxes = VGroup()
+        counter_blocks: list[dict[str, object]] = []
         for label, value in zip(counter_labels, counter_values):
             box = RoundedRectangle(
-                width=0.88,
-                height=0.56,
+                width=0.76,
+                height=0.48,
                 corner_radius=0.06,
                 stroke_width=1,
                 stroke_color=GRAY_D,
@@ -505,15 +508,17 @@ class GanttTimelineLevel2(Scene):
                 fill_opacity=0.38,
             ).move_to([box.get_center()[0], mid_y - box.height / 4, 0])
 
-            value_text = Text(value, font_size=20, weight=BOLD, color=WHITE)
+            value_text = Text(value, font_size=18, weight=BOLD, color=WHITE)
             value_text.move_to(box.get_center() + DOWN * 0.03)
-            label_text = Text(label, font_size=8, color=GRAY_B)
+            label_text = Text(label, font_size=7, color=GRAY_B)
             label_text.next_to(box, UP, buff=0.06)
-            group = VGroup(label_text, box, top_mask, bottom_mask, split_line, value_text)
+            card = VGroup(box, top_mask, bottom_mask, split_line, value_text)
+            group = VGroup(label_text, card)
             counter_boxes.add(group)
-        counter_boxes.arrange(RIGHT, buff=0.22, aligned_edge=DOWN)
-        counter_boxes.to_corner(UR, buff=0.4)
-        counter_boxes.shift(DOWN * 0.02)
+            counter_blocks.append({"group": group, "card": card})
+        counter_boxes.arrange(RIGHT, buff=0.18, aligned_edge=DOWN)
+        counter_boxes.to_corner(UR, buff=0.46)
+        counter_boxes.shift(UP * 0.04)
 
         timeline_left = LEFT * 5.5 + DOWN * 0.2
         timeline_right = RIGHT * 5.5 + DOWN * 0.2
@@ -659,33 +664,6 @@ class GanttTimelineLevel2(Scene):
         for r, dx in zip(tip_radii, tip_offsets):
             tip = Dot([line_left + dx, line_y, 0], radius=r, color=GREEN_E)
             today_info_line.add(tip)
-
-        # Panel derecho: dias habiles (barra grande) + subtitulos
-        panel = RoundedRectangle(
-            width=3.2,
-            height=2.2,
-            corner_radius=0.18,
-            stroke_width=1.2,
-            stroke_color=GRAY_C,
-            fill_color=BLACK,
-            fill_opacity=0.2,
-        )
-        panel.to_edge(RIGHT, buff=0.2).shift(UP * 1.0)
-        bar = Rectangle(width=0.35, height=1.4, stroke_width=0)
-        bar.set_color_by_gradient(RED_E, ORANGE, YELLOW, GREEN_C)
-        bar.next_to(panel.get_left(), RIGHT, buff=0.35)
-        bar.align_to(panel, DOWN).shift(UP * 0.25)
-        days_title = Text(str(total_days), font_size=34, weight=BOLD, color=WHITE)
-        days_label = Text("HABILES", font_size=12, color=GRAY_B)
-        days_block = VGroup(days_title, days_label).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
-        days_block.align_to(panel, LEFT).shift(RIGHT * 0.3)
-        subtext = Text(
-            f"{calendar_days} calendario | {holidays_count} feriado",
-            font_size=10,
-            color=GRAY_B,
-        )
-        subtext.next_to(days_block, DOWN, buff=0.12, aligned_edge=LEFT)
-        panel_group = VGroup(panel, bar, days_block, subtext)
 
         if "DEBUG_TODAY" in os.environ:
             print(f"[DEBUG_TODAY] start_min={start_min.date()} end_max={end_max.date()} today={today.date()}")
@@ -1162,7 +1140,45 @@ class GanttTimelineLevel2(Scene):
 
         self.play(Write(header), run_time=1)
         self.play(FadeIn(counter_boxes), run_time=0.6)
-        self.play(FadeIn(panel_group), run_time=0.6)
+
+        # Animacion: avanzar desde 06/01 hasta hoy, solo por dias
+        def _flip_value(block: dict[str, object], new_value: str, run_time: float) -> None:
+            old_card: VGroup = block["card"]  # type: ignore[assignment]
+            drop = 0.16
+            new_text = Text(new_value, font_size=18, weight=BOLD, color=WHITE)
+            new_text.move_to(old_card[4].get_center())
+            new_card = VGroup(
+                old_card[0].copy(),
+                old_card[1].copy(),
+                old_card[2].copy(),
+                old_card[3].copy(),
+                new_text,
+            )
+            new_card.move_to(old_card.get_center() + UP * drop)
+            new_card.set_opacity(0)
+            self.add(new_card)
+            self.play(
+                old_card.animate.shift(DOWN * drop).set_opacity(0),
+                new_card.animate.shift(DOWN * drop).set_opacity(1),
+                run_time=run_time,
+            )
+            block["group"].remove(old_card)  # type: ignore[call-arg]
+            self.remove(old_card)
+            block["group"].add(new_card)  # type: ignore[call-arg]
+            block["card"] = new_card
+
+        days_to_advance = (today_dt.date() - start_date).days
+        flip_time = 0.08
+        if days_to_advance > 0:
+            for _ in range(days_to_advance):
+                next_date = current_date + timedelta(days=1)
+                _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time)
+                if next_date.month != current_date.month:
+                    _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
+                if next_date.year != current_date.year:
+                    _flip_value(counter_blocks[2], f"{next_date.year // 100:02d}", flip_time)
+                    _flip_value(counter_blocks[3], f"{next_date.year % 100:02d}", flip_time)
+                current_date = next_date
         self.play(Create(timeline), run_time=0.8)
         self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
         today_group = None
