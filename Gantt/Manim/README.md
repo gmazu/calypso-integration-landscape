@@ -21,6 +21,7 @@ Genera `filter_gantt.tasks` y luego renderiza en un solo comando:
 python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --nivel 1 --scene GanttTimelineLevel2 --quality pql --preview
 ```
 El pipeline también soporta `|` para encadenar filtros igual que el CLI directo (en shell usa `\|` o comillas).
+Además valida el checksum del XLSX contra la última baseline en `backup/baseline`; si no coincide, se detiene.
 Opcional: guardar el último render en otra ruta con timestamp:
 ```
 python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --scene GanttTimelineLevel2 --quality pql --keep-scene /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt/OUT

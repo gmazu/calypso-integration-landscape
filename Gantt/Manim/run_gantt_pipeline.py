@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import sys
 import shutil
+import hashlib
 from datetime import datetime
 from pathlib import Path
 
@@ -99,12 +100,27 @@ def resolve_script_path() -> Path:
     return Path(__file__).with_name(script_name)
 
 
+def compute_sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def find_latest_baseline(root: Path) -> Path | None:
+    baselines = list(root.glob("*.xlsx"))
+    if not baselines:
+        return None
+    return max(baselines, key=lambda p: p.stat().st_mtime)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Genera filter_gantt.tasks desde XLSX y luego renderiza con Manim. "
             "El script activo se toma de run_gantt_pipeline.parametros. "
-            "Soporta '|' para encadenar filtros."
+            "Soporta '|' para encadenar filtros y valida checksum contra baseline."
         )
     )
     parser.add_argument("--xlsx", required=True, type=Path, help="Ruta al archivo XLSX.")
@@ -172,6 +188,27 @@ def main() -> int:
     if not args.xlsx.exists():
         print(f"Error: no existe el archivo {args.xlsx}", file=sys.stderr)
         return 1
+
+    baseline_dir = Path(__file__).with_name("backup") / "baseline"
+    baseline = find_latest_baseline(baseline_dir)
+    if baseline is None:
+        print(
+            f"Error: no se encontró baseline en {baseline_dir}. "
+            "Crea una copia baseline antes de continuar.",
+            file=sys.stderr,
+        )
+        return 2
+    current_hash = compute_sha256(args.xlsx)
+    baseline_hash = compute_sha256(baseline)
+    if current_hash != baseline_hash:
+        print(
+            "Error: el XLSX actual no coincide con la baseline. "
+            "Deteniendo el pipeline para revisión.",
+            file=sys.stderr,
+        )
+        print(f"XLSX: {args.xlsx}", file=sys.stderr)
+        print(f"Baseline: {baseline}", file=sys.stderr)
+        return 3
 
     script_path = resolve_script_path()
     filter_cmd = build_filter_args(args, filter_args, script_path)

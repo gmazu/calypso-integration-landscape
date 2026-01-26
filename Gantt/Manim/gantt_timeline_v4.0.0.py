@@ -598,27 +598,23 @@ class GanttTimelineLevel2(Scene):
         diff = abs((real_val or 0) - (plan_val or 0))
         dial_gap = 0.02 + 0.0015 * diff
         dial_gap = min(0.22, dial_gap)
+        dial_y_offset = -0.25
+        dial_center_y = scale_y + dial_height / 2 + dial_y_offset
         dial_real = Rectangle(
             width=dial_w,
             height=dial_height,
             stroke_width=0,
             fill_color=GREEN_E,
             fill_opacity=0.35,
-        ).move_to([x_today - dial_gap / 2, scale_y + dial_height / 2, 0])
+        ).move_to([x_today - dial_gap / 2, dial_center_y, 0])
         dial_plan = Rectangle(
             width=dial_w,
             height=dial_height,
             stroke_width=0,
             fill_color=GREEN_A,
             fill_opacity=0.35,
-        ).move_to([x_today + dial_gap / 2, scale_y + dial_height / 2, 0])
+        ).move_to([x_today + dial_gap / 2, dial_center_y, 0])
         today_line = VGroup(dial_real, dial_plan)
-        today_tick = Line(
-            [x_today, timeline_left[1] - 0.18, 0],
-            [x_today, timeline_left[1] + 0.18, 0],
-            color=GREEN_E,
-            stroke_width=1,
-        )
         today_label = Text(f"HOY {today.strftime('%d/%m')}", font_size=11, color=GREEN_E)
         pct_parts = []
         if avg_all is not None:
@@ -644,9 +640,9 @@ class GanttTimelineLevel2(Scene):
             info_items.append(today_pct)
         info_items.extend([today_days, today_elapsed, today_elapsed_pct])
         today_info = VGroup(*info_items).arrange(DOWN, buff=0.04, aligned_edge=LEFT)
-        today_info.move_to([timeline_left[0] - 1.0, scale_y + dial_height / 2 + 0.12, 0])
+        today_info.move_to([timeline_left[0] - 1.0, dial_center_y + 0.12, 0])
         today_info_line = VGroup()
-        line_y = scale_y + dial_height / 2 + 0.12
+        line_y = dial_center_y + 0.12
         line_left = x_today - 0.12
         line_right = today_info.get_right()[0]
         line_segs = 10
@@ -669,6 +665,22 @@ class GanttTimelineLevel2(Scene):
 
         if "DEBUG_TODAY" in os.environ:
             print(f"[DEBUG_TODAY] start_min={start_min.date()} end_max={end_max.date()} today={today.date()}")
+
+        def star_burst_tlu(cx, cy, color, jitter):
+            star = VGroup()
+            base_r = 0.05 + jitter.uniform(-0.004, 0.004)
+            steps = 5
+            for direction in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                dx, dy = direction
+                for i in range(1, steps + 1):
+                    t = i / steps
+                    radius = base_r * (0.55 - 0.35 * t)
+                    opacity = 0.75 - 0.6 * t
+                    offset = base_r * 2.4 * t
+                    x = cx + dx * offset
+                    y = cy + dy * offset
+                    star.add(Dot([x, y, 0], radius=max(0.006, radius), color=color).set_opacity(opacity))
+            return star
 
         points = VGroup()
         end_points = VGroup()
@@ -705,7 +717,8 @@ class GanttTimelineLevel2(Scene):
             x = date_to_x(tasks_for_date[0]["start"])
             y = timeline_left[1]
 
-            point = Dot([x, y, 0], radius=0.065, color=RED_E)
+            rng = random.Random(tasks_for_date[0]["id"])
+            point = star_burst_tlu(x, y, RED_E, rng)
 
             above = idx % 2 == 0
             if above:
@@ -933,31 +946,35 @@ class GanttTimelineLevel2(Scene):
             seg_width = max(0.01, x1 - x0)
             days_for_layout = max(1, biz_count)
             unit_w = seg_width / days_for_layout
+            dual_w = unit_w * 0.4
+            dual_gap = unit_w * 0.1
+            dual_offsets = [-(dual_gap + dual_w) / 2, (dual_gap + dual_w) / 2]
             # Usa el % de la fecha de inicio del tramo para evitar corrimientos
             pct_for_span = pct_by_date.get(d0)
             pct_norm = 0.0 if pct_for_span is None else max(0.0, min(1.0, pct_for_span / 100.0))
             if biz_count == 0:
                 t_prog = 0.0
                 # Fondo apagado
-                bg_seg = Rectangle(
-                    width=unit_w * 0.85,
-                    height=bar_height,
-                    stroke_width=0,
-                    fill_color=GRAY_C,
-                    fill_opacity=0.32,
-                )
-                bg_seg.move_to([x0 + 0.5 * unit_w, scale_y, 0])
-                bar_bg.add(bg_seg)
+                for dx in dual_offsets:
+                    bg_seg = Rectangle(
+                        width=dual_w,
+                        height=bar_height,
+                        stroke_width=0,
+                        fill_color=GRAY_C,
+                        fill_opacity=0.32,
+                    )
+                    bg_seg.move_to([x0 + 0.5 * unit_w + dx, scale_y, 0])
+                    bar_bg.add(bg_seg)
 
-                full_seg = Rectangle(
-                    width=unit_w * 0.85,
-                    height=bar_height,
-                    stroke_width=0,
-                    fill_color=interpolate_color(RED_E, GREEN_B, t_prog * 2),
-                    fill_opacity=1,
-                )
-                full_seg.move_to([x0 + 0.5 * unit_w, scale_y, 0])
-                bar_full.add(full_seg)
+                    full_seg = Rectangle(
+                        width=dual_w,
+                        height=bar_height,
+                        stroke_width=0,
+                        fill_color=interpolate_color(RED_E, GREEN_B, t_prog * 2),
+                        fill_opacity=1,
+                    )
+                    full_seg.move_to([x0 + 0.5 * unit_w + dx, scale_y, 0])
+                    bar_full.add(full_seg)
             else:
                 for idx_day, day in enumerate(business_days):
                     seg_x = x0 + (idx_day + 0.5) * unit_w
@@ -972,30 +989,32 @@ class GanttTimelineLevel2(Scene):
 
                     t_prog = idx_day / max(1, biz_count - 1)
                     # Fondo apagado
-                    bg_seg = Rectangle(
-                        width=unit_w * 0.85,
-                        height=bar_height,
-                        stroke_width=0,
-                        fill_color=GRAY_C,
-                        fill_opacity=0.32,
-                    )
-                    bg_seg.move_to([seg_x, scale_y, 0])
-                    bar_bg.add(bg_seg)
+                    for dx in dual_offsets:
+                        bg_seg = Rectangle(
+                            width=dual_w,
+                            height=bar_height,
+                            stroke_width=0,
+                            fill_color=GRAY_C,
+                            fill_opacity=0.32,
+                        )
+                        bg_seg.move_to([seg_x + dx, scale_y, 0])
+                        bar_bg.add(bg_seg)
 
                     # Full test (100%)
                     if t_prog <= 0.5:
                         full_color = interpolate_color(RED_E, GREEN_B, t_prog * 2)
                     else:
                         full_color = interpolate_color(GREEN_B, BLUE_E, (t_prog - 0.5) * 2)
-                    full_seg = Rectangle(
-                        width=unit_w * 0.85,
-                        height=bar_height,
-                        stroke_width=0,
-                        fill_color=full_color,
-                        fill_opacity=1,
-                    )
-                    full_seg.move_to([seg_x, scale_y, 0])
-                    bar_full.add(full_seg)
+                    for dx in dual_offsets:
+                        full_seg = Rectangle(
+                            width=dual_w,
+                            height=bar_height,
+                            stroke_width=0,
+                            fill_color=full_color,
+                            fill_opacity=1,
+                        )
+                        full_seg.move_to([seg_x + dx, scale_y, 0])
+                        bar_full.add(full_seg)
 
                     if pct_norm > 0 and t_prog <= pct_norm:
                         if t_prog <= 0.5:
@@ -1006,16 +1025,17 @@ class GanttTimelineLevel2(Scene):
                     else:
                         color = None
                         opacity = 0
-                    seg = Rectangle(
-                        width=unit_w * 0.85,
-                        height=bar_height,
-                        stroke_width=0,
-                        fill_color=color if color else GRAY_C,
-                        fill_opacity=opacity,
-                    )
-                    seg.move_to([seg_x, scale_y, 0])
-                    if opacity > 0:
-                        bar_lit.add(seg)
+                    for dx in dual_offsets:
+                        seg = Rectangle(
+                            width=dual_w,
+                            height=bar_height,
+                            stroke_width=0,
+                            fill_color=color if color else GRAY_C,
+                            fill_opacity=opacity,
+                        )
+                        seg.move_to([seg_x + dx, scale_y, 0])
+                        if opacity > 0:
+                            bar_lit.add(seg)
 
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
             if holiday_count > 0:
@@ -1179,10 +1199,7 @@ class GanttTimelineLevel2(Scene):
         self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
         today_group = None
         if today_line:
-            if today_pct:
-                today_group = VGroup(today_line, today_tick, today_info_line, today_info)
-            else:
-                today_group = VGroup(today_line, today_tick, today_info_line, today_info)
+            today_group = VGroup(today_info_line, today_info)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(FadeIn, stems_bg, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
@@ -1202,10 +1219,6 @@ class GanttTimelineLevel2(Scene):
         if holiday_marks:
             self.play(LaggedStartMap(FadeIn, holiday_marks, lag_ratio=0.05), run_time=0.5)
 
-        # Mostrar "hoy" junto con el resto de elementos
-        if today_group:
-            self.play(FadeIn(today_group), run_time=0.4)
-
         # Prueba de calidad: flash rápido sin pausas perceptibles
         if full_test_segments:
             self.add(full_test, bar_full)
@@ -1221,33 +1234,35 @@ class GanttTimelineLevel2(Scene):
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
 
-        # Linea de tiempo verde + avance sincronizado con el reloj
+        # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
-        progress_line = Line(
-            [x_start, timeline_left[1], 0],
-            [x_start, timeline_left[1], 0],
-            color=GREEN_E,
-            stroke_width=4,
-        )
-        self.play(FadeIn(progress_line), run_time=0.3)
+        x_shift = x_start - x_today
+        if today_line:
+            today_line.shift(RIGHT * x_shift)
+            self.play(FadeIn(today_line), run_time=0.2)
 
         days_to_advance = (today_dt.date() - start_date).days
-        flip_time = 0.08
+        flip_time = 1.0
         if days_to_advance > 0:
+            current_x = x_start
             for _ in range(days_to_advance):
                 next_date = current_date + timedelta(days=1)
                 new_x = date_to_x(datetime.combine(next_date, datetime.min.time()))
-                line_anim = progress_line.animate.put_start_and_end_on(
-                    [x_start, timeline_left[1], 0],
-                    [new_x, timeline_left[1], 0],
-                )
-                _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time, [line_anim])
+                anims = []
+                if today_line:
+                    anims.append(today_line.animate.shift(RIGHT * (new_x - current_x)))
+                _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time, anims)
                 if next_date.month != current_date.month:
                     _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
                 if next_date.year != current_date.year:
                     _flip_value(counter_blocks[2], f"{next_date.year // 100:02d}", flip_time)
                     _flip_value(counter_blocks[3], f"{next_date.year % 100:02d}", flip_time)
                 current_date = next_date
+                current_x = new_x
+
+        # Mostrar "hoy" al final de la animación del reloj
+        if today_group:
+            self.play(FadeIn(today_group), run_time=0.4)
 
         self.wait(2)
 
