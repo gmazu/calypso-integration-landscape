@@ -639,9 +639,11 @@ class GanttTimelineLevel2(Scene):
         today_days = Text(f"HAB {total_days}d", font_size=8, color=GREEN_E)
         today_elapsed = Text(f"TRANS {elapsed_days}d", font_size=8, color=GREEN_E)
         today_elapsed_pct = Text(f"{elapsed_pct}%", font_size=8, color=GREEN_E)
-        today_info = VGroup(today_label, today_pct, today_days, today_elapsed, today_elapsed_pct).arrange(
-            DOWN, buff=0.04, aligned_edge=LEFT
-        )
+        info_items = [today_label]
+        if today_pct is not None:
+            info_items.append(today_pct)
+        info_items.extend([today_days, today_elapsed, today_elapsed_pct])
+        today_info = VGroup(*info_items).arrange(DOWN, buff=0.04, aligned_edge=LEFT)
         today_info.move_to([timeline_left[0] - 1.0, scale_y + dial_height / 2 + 0.12, 0])
         today_info_line = VGroup()
         line_y = scale_y + dial_height / 2 + 0.12
