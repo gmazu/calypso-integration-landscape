@@ -3,7 +3,7 @@
 ## Ejecución (flujo actual)
 1) Generar `filter_gantt.tasks`:
 ```
-python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/gantt_timeline_v2.py -xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --nivel 1
+python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/gantt_timeline_v4.0.0.py -xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --nivel 1
 ```
 Para múltiples niveles: `--nivel 1 --nivel 2` o `--nivel 1,2`.
 Los filtros `--nivel` y `--id` se aplican en el orden escrito (anidados).
@@ -12,7 +12,7 @@ Usa `--expand` junto con `--id` para abrir solo el siguiente nivel del ID.
 
 2) Renderizar con Manim (lee `filter_gantt.tasks`):
 ```
-manim -pql gantt_timeline_v2.py GanttTimelineLevel2
+manim -pql gantt_timeline_v4.0.0.py GanttTimelineLevel2
 ```
 
 ## Ejecución (pipeline)
@@ -20,6 +20,7 @@ Genera `filter_gantt.tasks` y luego renderiza en un solo comando:
 ```
 python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --nivel 1 --scene GanttTimelineLevel2 --quality pql --preview
 ```
+El pipeline también soporta `|` para encadenar filtros igual que el CLI directo (en shell usa `\|` o comillas).
 Opcional: guardar el último render en otra ruta con timestamp:
 ```
 python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --scene GanttTimelineLevel2 --quality pql --keep-scene /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt/OUT

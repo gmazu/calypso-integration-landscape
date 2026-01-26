@@ -15,6 +15,10 @@ def extract_filter_args(argv: list[str]) -> tuple[list[str], list[str]]:
     i = 0
     while i < len(argv):
         arg = argv[i]
+        if arg == "|":
+            filters.append(arg)
+            i += 1
+            continue
         if arg in ("--nivel", "--id"):
             if i + 1 >= len(argv):
                 raise SystemExit(f"Error: {arg} requiere un valor.")
@@ -99,7 +103,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Genera filter_gantt.tasks desde XLSX y luego renderiza con Manim. "
-            "El script activo se toma de run_gantt_pipeline.parametros."
+            "El script activo se toma de run_gantt_pipeline.parametros. "
+            "Soporta '|' para encadenar filtros."
         )
     )
     parser.add_argument("--xlsx", required=True, type=Path, help="Ruta al archivo XLSX.")
