@@ -24,6 +24,7 @@ Opcional: guardar el último render en otra ruta con timestamp:
 ```
 python3 /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Manim/run_gantt_pipeline.py --xlsx "/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt BCI CALYPSO BANCO GLOBAL 2.0 (2).xlsx" --scene GanttTimelineLevel2 --quality pql --keep-scene /home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/GoogleDrive/Gantt/OUT
 ```
+Nota: la carpeta de salida que el pipeline revisa para copiar/limpiar MP4 se resuelve desde `run_gantt_pipeline.parametros` (script activo), y se dejan solo el último MP4 en `media/videos/<script>`.
 
 ## Cambios recientes
 - Línea de tiempo lee solo `filter_gantt.tasks`; XLSX se procesa aparte.

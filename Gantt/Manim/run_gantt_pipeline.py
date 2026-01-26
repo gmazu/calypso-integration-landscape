@@ -26,8 +26,7 @@ def extract_filter_args(argv: list[str]) -> tuple[list[str], list[str]]:
     return filters, rest
 
 
-def build_filter_args(args: argparse.Namespace, filter_args: list[str]) -> list[str]:
-    script_path = resolve_script_path()
+def build_filter_args(args: argparse.Namespace, filter_args: list[str], script_path: Path) -> list[str]:
     cmd = [sys.executable, str(script_path)]
     cmd += ["--xlsx", str(args.xlsx)]
     cmd += filter_args
@@ -40,7 +39,7 @@ def build_filter_args(args: argparse.Namespace, filter_args: list[str]) -> list[
     return cmd
 
 
-def build_manim_args(args: argparse.Namespace) -> list[str]:
+def build_manim_args(args: argparse.Namespace, script_path: Path) -> list[str]:
     cmd = ["manim"]
     if args.quality:
         qual = args.quality
@@ -53,7 +52,7 @@ def build_manim_args(args: argparse.Namespace) -> list[str]:
         cmd += ["--fps", str(args.fps)]
     if args.preview:
         cmd.append("-p")
-    cmd += [str(resolve_script_path()), args.scene]
+    cmd += [str(script_path), args.scene]
     return cmd
 
 
@@ -98,7 +97,10 @@ def resolve_script_path() -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Genera filter_gantt.tasks desde XLSX y luego renderiza con Manim."
+        description=(
+            "Genera filter_gantt.tasks desde XLSX y luego renderiza con Manim. "
+            "El script activo se toma de run_gantt_pipeline.parametros."
+        )
     )
     parser.add_argument("--xlsx", required=True, type=Path, help="Ruta al archivo XLSX.")
     parser.add_argument(
@@ -146,7 +148,10 @@ def main() -> int:
     parser.add_argument(
         "--keep-scene",
         type=Path,
-        help="Ruta donde se guarda una copia del último video renderizado.",
+        help=(
+            "Ruta donde se guarda una copia del último video renderizado. "
+            "El último MP4 se busca en media/videos/<script_activo> y se limpian los demás."
+        ),
     )
     parser.add_argument(
         "--only-debug",
@@ -163,7 +168,8 @@ def main() -> int:
         print(f"Error: no existe el archivo {args.xlsx}", file=sys.stderr)
         return 1
 
-    filter_cmd = build_filter_args(args, filter_args)
+    script_path = resolve_script_path()
+    filter_cmd = build_filter_args(args, filter_args, script_path)
     print("Ejecutando:", " ".join(filter_cmd))
     result = subprocess.run(filter_cmd)
     if result.returncode != 0:
@@ -171,13 +177,13 @@ def main() -> int:
     if args.only_debug:
         return 0
 
-    manim_cmd = build_manim_args(args)
+    manim_cmd = build_manim_args(args, script_path)
     print("Ejecutando:", " ".join(manim_cmd))
     result = subprocess.run(manim_cmd)
     if result.returncode != 0:
         return result.returncode
 
-    media_root = Path(__file__).with_name("media") / "videos" / "gantt_timeline_v3.0.0"
+    media_root = Path(__file__).with_name("media") / "videos" / script_path.stem
     latest = find_latest_mp4(media_root)
     if latest:
         prune_other_mp4s(latest)
