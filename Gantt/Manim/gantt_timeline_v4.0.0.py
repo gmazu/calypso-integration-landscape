@@ -1251,6 +1251,82 @@ class GanttTimelineLevel2(Scene):
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
 
+        # Panel vertical derecho con donut de avance diario
+        target_pct = 19.0
+        days_total = max(1, (today_dt.date() - start_date).days)
+        pct_tracker = ValueTracker(0.0)
+        days_tracker = ValueTracker(0.0)
+
+        panel_width = 2.3
+        panel_height = 3.6
+        panel_bg = RoundedRectangle(
+            width=panel_width,
+            height=panel_height,
+            corner_radius=0.12,
+            stroke_width=1,
+            stroke_color=GRAY_D,
+            fill_color=BLACK,
+            fill_opacity=0.25,
+        )
+        panel_bg.to_edge(RIGHT, buff=0.35).shift(UP * 0.9)
+
+        donut_outer = 0.8
+        donut_inner = 0.45
+
+        def _progress_color(pct: float) -> Color:
+            t = 0.0 if target_pct == 0 else min(1.0, max(0.0, pct / target_pct))
+            return interpolate_color(RED_E, BLUE_E, t)
+
+        def _donut_progress():
+            pct = pct_tracker.get_value()
+            angle = TAU * (pct / 100.0)
+            return AnnularSector(
+                outer_radius=donut_outer,
+                inner_radius=donut_inner,
+                start_angle=PI / 2,
+                angle=angle,
+                color=_progress_color(pct),
+                fill_opacity=0.9,
+                stroke_width=0,
+            )
+
+        def _donut_remainder():
+            pct = pct_tracker.get_value()
+            angle = TAU * (pct / 100.0)
+            return AnnularSector(
+                outer_radius=donut_outer,
+                inner_radius=donut_inner,
+                start_angle=PI / 2 + angle,
+                angle=TAU - angle,
+                color=GRAY_C,
+                fill_opacity=0.25,
+                stroke_width=0,
+            )
+
+        donut_progress = always_redraw(_donut_progress)
+        donut_remainder = always_redraw(_donut_remainder)
+        donut_group = VGroup(donut_remainder, donut_progress)
+        donut_group.move_to(panel_bg.get_center() + UP * 0.35)
+
+        pct_text = always_redraw(
+            lambda: Text(
+                f"{int(round(pct_tracker.get_value()))}%",
+                font_size=24,
+                weight=BOLD,
+                color=WHITE,
+            ).move_to(donut_group.get_center())
+        )
+        day_text = always_redraw(
+            lambda: Text(
+                f"DIA {int(round(days_tracker.get_value()))}/{days_total}",
+                font_size=12,
+                color=GRAY_B,
+            ).next_to(pct_text, DOWN, buff=0.12)
+        )
+
+        panel_group = VGroup(panel_bg, donut_group, pct_text, day_text)
+        self.play(FadeIn(panel_group), run_time=0.4)
+
         # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
         x_shift = x_start - x_today
@@ -1268,6 +1344,10 @@ class GanttTimelineLevel2(Scene):
                 anims = []
                 if today_line:
                     anims.append(today_line.animate.shift(RIGHT * (new_x - current_x)))
+                next_day = min(days_total, int(days_tracker.get_value() + 1))
+                next_pct = min(target_pct, (target_pct / days_total) * next_day)
+                anims.append(days_tracker.animate.set_value(next_day))
+                anims.append(pct_tracker.animate.set_value(next_pct))
                 _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time, anims)
                 if next_date.month != current_date.month:
                     _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
