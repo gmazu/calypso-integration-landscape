@@ -682,6 +682,22 @@ class GanttTimelineLevel2(Scene):
                     star.add(Dot([x, y, 0], radius=max(0.006, radius), color=color).set_opacity(opacity))
             return star
 
+        def star_burst_end_points(cx, cy, color, jitter):
+            star = VGroup()
+            base_r = 0.034 + jitter.uniform(-0.004, 0.004)
+            steps = 5
+            for direction in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                dx, dy = direction
+                for i in range(1, steps + 1):
+                    t = i / steps
+                    radius = base_r * (0.55 - 0.35 * t)
+                    opacity = 0.75 - 0.6 * t
+                    offset = base_r * 2.4 * t
+                    x = cx + dx * offset
+                    y = cy + dy * offset
+                    star.add(Dot([x, y, 0], radius=max(0.006, radius), color=color).set_opacity(opacity))
+            return star
+
         points = VGroup()
         end_points = VGroup()
         end_dates = VGroup()
@@ -879,7 +895,7 @@ class GanttTimelineLevel2(Scene):
 
             # Marcas de escala (0-100) junto a la barra (solo una vez por fecha)
             scale_marks = VGroup()
-            ticks = [0, 25, 50, 75, 100]
+            ticks = [25, 50, 75, 100]
             for t in ticks:
                 frac = t / 100.0
                 tick_len = 0.16 if t in (0, 50, 100) else 0.08
@@ -914,7 +930,8 @@ class GanttTimelineLevel2(Scene):
         for idx, end_key in enumerate(end_keys_sorted):
             x_end = date_to_x(datetime.combine(end_key, datetime.min.time()))
             y = scale_y
-            end_point = Dot([x_end, y, 0], radius=0.05, color=BLUE_D)
+            rng = random.Random(end_key.toordinal())
+            end_point = star_burst_end_points(x_end, y, BLUE_D, rng)
             end_label = Text(end_key.strftime("%d/%m"), font_size=11, color=BLUE_D)
             if idx % 2 == 0:
                 end_label.next_to(end_point, DOWN, buff=0.08)
