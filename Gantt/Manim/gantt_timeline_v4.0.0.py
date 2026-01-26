@@ -464,18 +464,18 @@ class GanttTimelineLevel2(Scene):
         today_dt = datetime.now()
         start_date = date(today_dt.year, 1, 6)
         current_date = start_date
-        counter_labels = ["DIA", "MES", "ANO", "ANO"]
+        counter_labels = ["DIA", "MES", "ANO"]
         counter_values = [
             f"{current_date.day:02d}",
             f"{current_date.month:02d}",
-            f"{current_date.year // 100:02d}",
-            f"{current_date.year % 100:02d}",
+            f"{current_date.year:04d}",
         ]
         counter_boxes = VGroup()
         counter_blocks: list[dict[str, object]] = []
         for label, value in zip(counter_labels, counter_values):
+            box_width = 0.96 if label == "ANO" else 0.76
             box = RoundedRectangle(
-                width=0.76,
+                width=box_width,
                 height=0.48,
                 corner_radius=0.06,
                 stroke_width=1,
@@ -1272,8 +1272,7 @@ class GanttTimelineLevel2(Scene):
                 if next_date.month != current_date.month:
                     _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
                 if next_date.year != current_date.year:
-                    _flip_value(counter_blocks[2], f"{next_date.year // 100:02d}", flip_time)
-                    _flip_value(counter_blocks[3], f"{next_date.year % 100:02d}", flip_time)
+                    _flip_value(counter_blocks[2], f"{next_date.year:04d}", flip_time)
                 current_date = next_date
                 current_x = new_x
 
