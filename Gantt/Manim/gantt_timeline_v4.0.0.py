@@ -590,7 +590,7 @@ class GanttTimelineLevel2(Scene):
             x_today = x_prev + (x_next - x_prev) * ratio_local
         else:
             x_today = date_to_x(today)
-        # Dial vintage: barras paralelas para real vs plan (más separación si difieren)
+        # Dial vintage: solo efecto de desvanecido sin barras de color
         dial_height = 0.55
         dial_w = 0.08
         plan_val = avg_planned if avg_planned is not None else 0
@@ -600,19 +600,20 @@ class GanttTimelineLevel2(Scene):
         dial_gap = min(0.22, dial_gap)
         dial_y_offset = -0.25
         dial_center_y = scale_y + dial_height / 2 + dial_y_offset
+        # Barras invisibles para mantener la estructura pero sin color visible
         dial_real = Rectangle(
             width=dial_w,
             height=dial_height,
             stroke_width=0,
-            fill_color=GREEN_E,
-            fill_opacity=0.35,
+            fill_color=GRAY_C,
+            fill_opacity=0.08,
         ).move_to([x_today - dial_gap / 2, dial_center_y, 0])
         dial_plan = Rectangle(
             width=dial_w,
             height=dial_height,
             stroke_width=0,
-            fill_color=GREEN_A,
-            fill_opacity=0.35,
+            fill_color=GRAY_C,
+            fill_opacity=0.08,
         ).move_to([x_today + dial_gap / 2, dial_center_y, 0])
         today_line = VGroup(dial_real, dial_plan)
         today_label = Text(f"HOY {today.strftime('%d/%m')}", font_size=11, color=GREEN_E)
@@ -1257,8 +1258,8 @@ class GanttTimelineLevel2(Scene):
         pct_tracker = ValueTracker(0.0)
         days_tracker = ValueTracker(0.0)
 
-        donut_outer = 0.8
-        donut_inner = 0.45
+        donut_outer = 0.6
+        donut_inner = 0.38
 
         def _progress_color(pct: float) -> Color:
             t = 0.0 if target_pct == 0 else min(1.0, max(0.0, pct / target_pct))
@@ -1271,7 +1272,7 @@ class GanttTimelineLevel2(Scene):
                 outer_radius=donut_outer,
                 inner_radius=donut_inner,
                 start_angle=PI / 2,
-                angle=angle,
+                angle=-angle,
                 color=_progress_color(pct),
                 fill_opacity=0.9,
                 stroke_width=0,
@@ -1283,14 +1284,14 @@ class GanttTimelineLevel2(Scene):
             return AnnularSector(
                 outer_radius=donut_outer,
                 inner_radius=donut_inner,
-                start_angle=PI / 2 + angle,
+                start_angle=PI / 2 - angle,
                 angle=TAU - angle,
                 color=GRAY_C,
                 fill_opacity=0.25,
                 stroke_width=0,
             )
 
-        donut_anchor = RIGHT * 5.6 + UP * 2.2
+        donut_anchor = RIGHT * 5.6 + UP * 1.6
 
         donut_progress = always_redraw(lambda: _donut_progress().move_to(donut_anchor))
         donut_remainder = always_redraw(lambda: _donut_remainder().move_to(donut_anchor))
@@ -1299,17 +1300,17 @@ class GanttTimelineLevel2(Scene):
         pct_text = always_redraw(
             lambda: Text(
                 f"{int(round(pct_tracker.get_value()))}%",
-                font_size=24,
+                font_size=12,
                 weight=BOLD,
                 color=WHITE,
             ).move_to(donut_anchor)
         )
         day_text = always_redraw(
             lambda: Text(
-                f"DIA {int(round(days_tracker.get_value()))}/{days_total}",
-                font_size=12,
+                f"DIA {int(round(days_tracker.get_value()))}",
+                font_size=9,
                 color=GRAY_B,
-            ).move_to(donut_anchor + DOWN * 0.42)
+            ).move_to(donut_anchor + DOWN * 0.36)
         )
 
         donut_block = VGroup(donut_group, pct_text, day_text)
