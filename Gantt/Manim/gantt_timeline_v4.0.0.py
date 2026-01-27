@@ -478,29 +478,33 @@ class GanttTimelineLevel2(Scene):
         planned_pct_val = 0
         start_real = 0
         start_plan = 0
+        def _fmt2(value: int) -> str:
+            return f"{int(value):02d}"
+
+        counter_scale = 1.4
         counter_labels = ["R%", "P%", "%", "DIAS", "DIA", "MES", "ANO"]
         counter_values = [
-            f"{start_real}",
-            f"{start_plan}",
-            f"{int(round(start_pct))}",
-            f"{start_day_count}",
-            f"{current_date.day:02d}",
-            f"{current_date.month:02d}",
+            _fmt2(start_real),
+            _fmt2(start_plan),
+            _fmt2(int(round(start_pct))),
+            _fmt2(start_day_count),
+            _fmt2(current_date.day),
+            _fmt2(current_date.month),
             f"{current_date.year:04d}",
         ]
         counter_boxes = VGroup()
         counter_blocks: list[dict[str, object]] = []
         for label, value in zip(counter_labels, counter_values):
             if label == "ANO":
-                box_width = 0.72
+                box_width = 0.72 * counter_scale
             elif label in ("R%", "P%", "%", "DIAS"):
-                box_width = 0.62
+                box_width = 0.62 * counter_scale
             else:
-                box_width = 0.57
+                box_width = 0.57 * counter_scale
             box = RoundedRectangle(
                 width=box_width,
-                height=0.36,
-                corner_radius=0.05,
+                height=0.36 * counter_scale,
+                corner_radius=0.05 * counter_scale,
                 stroke_width=1,
                 stroke_color=GRAY_D,
                 fill_color=BLACK,
@@ -531,16 +535,17 @@ class GanttTimelineLevel2(Scene):
                 fill_opacity=0.38,
             ).move_to([box.get_center()[0], mid_y - box.height / 4, 0])
 
-            value_text = Text(value, font_size=16, weight=BOLD, color=WHITE)
+            value_text = Text(
+                value, font_size=16 * counter_scale, weight=BOLD, color=WHITE, font="DejaVu Sans Mono"
+            )
             value_text.move_to(box.get_center() + DOWN * 0.02)
-            label_text = Text(label, font_size=6, color=GRAY_B)
-            label_text.next_to(box, UP, buff=0.05)
+            label_text = Text(label, font_size=6 * counter_scale, color=GRAY_B)
+            label_text.next_to(box, UP, buff=0.05 * counter_scale)
             card = VGroup(box, top_mask, bottom_mask, split_line, value_text)
             group = VGroup(label_text, card)
             counter_boxes.add(group)
             counter_blocks.append({"group": group, "card": card})
-        counter_boxes.arrange(RIGHT, buff=0.14, aligned_edge=DOWN)
-        counter_boxes.scale(1.4)
+        counter_boxes.arrange(RIGHT, buff=0.14 * counter_scale, aligned_edge=DOWN)
         counter_boxes.to_edge(UP, buff=0.5)
         counter_boxes.set_x(0)
         counter_boxes.shift(DOWN * 0.6)
@@ -623,7 +628,10 @@ class GanttTimelineLevel2(Scene):
         plan_val = avg_planned if avg_planned is not None else 0
         real_val = avg_all if avg_all is not None else 0
         diff = abs((real_val or 0) - (plan_val or 0))
-        dial_gap = 0.02 + 0.0015 * diff
+        if diff == 0:
+            dial_gap = 0.0
+        else:
+            dial_gap = 0.02 + 0.0015 * diff
         dial_gap = min(0.22, dial_gap)
         dial_y_offset = -0.25
         dial_center_y = scale_y + dial_height / 2 + dial_y_offset
@@ -960,7 +968,7 @@ class GanttTimelineLevel2(Scene):
             y = scale_y
             rng = random.Random(end_key.toordinal())
             end_point = star_burst_end_points(x_end, y, BLUE_D, rng)
-            end_label = Text(end_key.strftime("%d/%m"), font_size=10, color=BLUE_D)
+            end_label = Text(end_key.strftime("%d/%m"), font_size=8, color=BLUE_D)
             if idx % 2 == 0:
                 end_label.next_to(end_point, DOWN, buff=0.08)
             else:
@@ -1211,8 +1219,10 @@ class GanttTimelineLevel2(Scene):
         # Animacion: avanzar desde 06/01 hasta hoy, flips en paralelo
         def _prepare_flip(block: dict[str, object], new_value: str) -> tuple[list[Animation], VGroup, VGroup]:
             old_card: VGroup = block["card"]  # type: ignore[assignment]
-            drop = 0.12
-            new_text = Text(new_value, font_size=16, weight=BOLD, color=WHITE)
+            drop = 0.12 * counter_scale
+            new_text = Text(
+                new_value, font_size=16 * counter_scale, weight=BOLD, color=WHITE, font="DejaVu Sans Mono"
+            )
             new_text.move_to(old_card[4].get_center())
             new_card = VGroup(
                 old_card[0].copy(),
@@ -1231,9 +1241,6 @@ class GanttTimelineLevel2(Scene):
             return anims, old_card, new_card
         self.play(Create(timeline), run_time=0.8)
         self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
-        today_group = None
-        if today_line:
-            today_group = VGroup(today_info_line, today_info)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(FadeIn, stems_bg, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
@@ -1291,7 +1298,7 @@ class GanttTimelineLevel2(Scene):
                     anims.append(today_line.animate.shift(RIGHT * (new_x - current_x)))
 
                 flips: list[tuple[dict[str, object], str]] = []
-                flips.append((counter_blocks[4], f"{next_date.day:02d}"))
+                flips.append((counter_blocks[4], _fmt2(next_date.day)))
 
                 next_day_date = _as_date(next_date)
                 if next_day_date.weekday() < 5 and next_day_date not in HOLIDAYS_2026:
@@ -1301,13 +1308,13 @@ class GanttTimelineLevel2(Scene):
                     anims.append(pct_tracker.animate.set_value(next_pct))
                     next_real = min(real_pct_val, (real_pct_val / days_total) * next_day)
                     next_plan = min(planned_pct_val, (planned_pct_val / days_total) * next_day)
-                    flips.append((counter_blocks[0], f"{int(round(next_real))}"))
-                    flips.append((counter_blocks[1], f"{int(round(next_plan))}"))
-                    flips.append((counter_blocks[2], f"{int(round(next_pct))}"))
-                    flips.append((counter_blocks[3], f"{next_day}"))
+                    flips.append((counter_blocks[0], _fmt2(int(round(next_real)))))
+                    flips.append((counter_blocks[1], _fmt2(int(round(next_plan)))))
+                    flips.append((counter_blocks[2], _fmt2(int(round(next_pct)))))
+                    flips.append((counter_blocks[3], _fmt2(next_day)))
 
                 if next_date.month != current_date.month:
-                    flips.append((counter_blocks[5], f"{next_date.month:02d}"))
+                    flips.append((counter_blocks[5], _fmt2(next_date.month)))
                 if next_date.year != current_date.year:
                     flips.append((counter_blocks[6], f"{next_date.year:04d}"))
 
@@ -1327,9 +1334,7 @@ class GanttTimelineLevel2(Scene):
                 current_date = next_date
                 current_x = new_x
 
-        # Mostrar "hoy" al final de la animación del reloj
-        if today_group:
-            self.play(FadeIn(today_group), run_time=0.4)
+        # Mostrar "hoy" desactivado (se eliminó el panel verde)
 
         self.wait(2)
 
