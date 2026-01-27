@@ -1257,19 +1257,6 @@ class GanttTimelineLevel2(Scene):
         pct_tracker = ValueTracker(0.0)
         days_tracker = ValueTracker(0.0)
 
-        panel_width = 2.3
-        panel_height = 3.6
-        panel_bg = RoundedRectangle(
-            width=panel_width,
-            height=panel_height,
-            corner_radius=0.12,
-            stroke_width=1,
-            stroke_color=GRAY_D,
-            fill_color=BLACK,
-            fill_opacity=0.25,
-        )
-        panel_bg.to_edge(RIGHT, buff=0.35).shift(UP * 0.9)
-
         donut_outer = 0.8
         donut_inner = 0.45
 
@@ -1303,10 +1290,11 @@ class GanttTimelineLevel2(Scene):
                 stroke_width=0,
             )
 
-        donut_progress = always_redraw(_donut_progress)
-        donut_remainder = always_redraw(_donut_remainder)
+        donut_anchor = RIGHT * 5.6 + UP * 2.2
+
+        donut_progress = always_redraw(lambda: _donut_progress().move_to(donut_anchor))
+        donut_remainder = always_redraw(lambda: _donut_remainder().move_to(donut_anchor))
         donut_group = VGroup(donut_remainder, donut_progress)
-        donut_group.move_to(panel_bg.get_center() + UP * 0.35)
 
         pct_text = always_redraw(
             lambda: Text(
@@ -1314,18 +1302,18 @@ class GanttTimelineLevel2(Scene):
                 font_size=24,
                 weight=BOLD,
                 color=WHITE,
-            ).move_to(donut_group.get_center())
+            ).move_to(donut_anchor)
         )
         day_text = always_redraw(
             lambda: Text(
                 f"DIA {int(round(days_tracker.get_value()))}/{days_total}",
                 font_size=12,
                 color=GRAY_B,
-            ).next_to(pct_text, DOWN, buff=0.12)
+            ).move_to(donut_anchor + DOWN * 0.42)
         )
 
-        panel_group = VGroup(panel_bg, donut_group, pct_text, day_text)
-        self.play(FadeIn(panel_group), run_time=0.4)
+        donut_block = VGroup(donut_group, pct_text, day_text)
+        self.play(FadeIn(donut_block), run_time=0.4)
 
         # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
