@@ -518,7 +518,7 @@ class GanttTimelineLevel2(Scene):
             counter_blocks.append({"group": group, "card": card})
         counter_boxes.arrange(RIGHT, buff=0.14, aligned_edge=DOWN)
         counter_boxes.to_corner(UR, buff=0.46)
-        counter_boxes.shift(UP * 0.04)
+        counter_boxes.shift(UP * 0.04 + LEFT * 1.2)
 
         timeline_left = LEFT * 5.5 + DOWN * 0.2
         timeline_right = RIGHT * 5.5 + DOWN * 0.2
@@ -1254,11 +1254,16 @@ class GanttTimelineLevel2(Scene):
 
         # Panel vertical derecho con % y días en caja
         target_pct = 19.0
-        days_total = max(1, (today_dt.date() - start_date).days)
-        pct_tracker = ValueTracker(0.0)
-        days_tracker = ValueTracker(0.0)
+        days_total = business_days_count(start_date, today_dt.date(), HOLIDAYS_2026)
+        if days_total <= 0:
+            days_total = 1
+        start_day_date = _as_date(start_date)
+        start_is_business = start_day_date.weekday() < 5 and start_day_date not in HOLIDAYS_2026
+        start_day_count = 1 if start_is_business else 0
+        pct_tracker = ValueTracker((target_pct / days_total) * start_day_count)
+        days_tracker = ValueTracker(start_day_count)
 
-        stats_anchor = RIGHT * 6.1 + UP * 1.6
+        stats_anchor = RIGHT * 6.1 + UP * 2.0
 
         # Caja bonita para contener los valores
         stats_box = RoundedRectangle(
@@ -1307,10 +1312,12 @@ class GanttTimelineLevel2(Scene):
                 anims = []
                 if today_line:
                     anims.append(today_line.animate.shift(RIGHT * (new_x - current_x)))
-                next_day = min(days_total, int(days_tracker.get_value() + 1))
-                next_pct = min(target_pct, (target_pct / days_total) * next_day)
-                anims.append(days_tracker.animate.set_value(next_day))
-                anims.append(pct_tracker.animate.set_value(next_pct))
+                next_day_date = _as_date(next_date)
+                if next_day_date.weekday() < 5 and next_day_date not in HOLIDAYS_2026:
+                    next_day = min(days_total, int(days_tracker.get_value() + 1))
+                    next_pct = min(target_pct, (target_pct / days_total) * next_day)
+                    anims.append(days_tracker.animate.set_value(next_day))
+                    anims.append(pct_tracker.animate.set_value(next_pct))
                 _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time, anims)
                 if next_date.month != current_date.month:
                     _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
