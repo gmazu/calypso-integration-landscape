@@ -464,8 +464,19 @@ class GanttTimelineLevel2(Scene):
         today_dt = datetime.now()
         start_date = date(today_dt.year, 1, 6)
         current_date = start_date
-        counter_labels = ["DIA", "MES", "ANO"]
+        target_pct = 19.0
+        days_total = business_days_count(start_date, today_dt.date(), HOLIDAYS_2026)
+        if days_total <= 0:
+            days_total = 1
+        start_day_date = _as_date(start_date)
+        start_is_business = start_day_date.weekday() < 5 and start_day_date not in HOLIDAYS_2026
+        start_day_count = 1 if start_is_business else 0
+        start_pct = (target_pct / days_total) * start_day_count
+
+        counter_labels = ["%", "DIAS", "DIA", "MES", "ANO"]
         counter_values = [
+            f"{int(round(start_pct))}",
+            f"{start_day_count}",
             f"{current_date.day:02d}",
             f"{current_date.month:02d}",
             f"{current_date.year:04d}",
@@ -473,7 +484,12 @@ class GanttTimelineLevel2(Scene):
         counter_boxes = VGroup()
         counter_blocks: list[dict[str, object]] = []
         for label, value in zip(counter_labels, counter_values):
-            box_width = 0.72 if label == "ANO" else 0.57
+            if label == "ANO":
+                box_width = 0.72
+            elif label in ("%", "DIAS"):
+                box_width = 0.62
+            else:
+                box_width = 0.57
             box = RoundedRectangle(
                 width=box_width,
                 height=0.36,
@@ -1252,48 +1268,9 @@ class GanttTimelineLevel2(Scene):
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
 
-        # Panel vertical derecho con % y días en caja
-        target_pct = 19.0
-        days_total = business_days_count(start_date, today_dt.date(), HOLIDAYS_2026)
-        if days_total <= 0:
-            days_total = 1
-        start_day_date = _as_date(start_date)
-        start_is_business = start_day_date.weekday() < 5 and start_day_date not in HOLIDAYS_2026
-        start_day_count = 1 if start_is_business else 0
-        pct_tracker = ValueTracker((target_pct / days_total) * start_day_count)
+        # Contadores de % y días (mismo estilo de reloj)
+        pct_tracker = ValueTracker(start_pct)
         days_tracker = ValueTracker(start_day_count)
-
-        stats_anchor = RIGHT * 6.1 + UP * 2.0
-
-        # Caja bonita para contener los valores
-        stats_box = RoundedRectangle(
-            width=1.4,
-            height=0.9,
-            corner_radius=0.08,
-            stroke_width=2,
-            stroke_color=GRAY_D,
-            fill_color=BLACK,
-            fill_opacity=0.4,
-        ).move_to(stats_anchor)
-
-        pct_text = always_redraw(
-            lambda: Text(
-                f"{int(round(pct_tracker.get_value()))}%",
-                font_size=24,
-                weight=BOLD,
-                color=WHITE,
-            ).move_to(stats_anchor + UP * 0.15)
-        )
-        day_text = always_redraw(
-            lambda: Text(
-                f"DIA {int(round(days_tracker.get_value()))}",
-                font_size=11,
-                color=GRAY_B,
-            ).move_to(stats_anchor + DOWN * 0.22)
-        )
-
-        stats_block = VGroup(stats_box, pct_text, day_text)
-        self.play(FadeIn(stats_block), run_time=0.4)
 
         # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
@@ -1318,11 +1295,13 @@ class GanttTimelineLevel2(Scene):
                     next_pct = min(target_pct, (target_pct / days_total) * next_day)
                     anims.append(days_tracker.animate.set_value(next_day))
                     anims.append(pct_tracker.animate.set_value(next_pct))
-                _flip_value(counter_blocks[0], f"{next_date.day:02d}", flip_time, anims)
+                    _flip_value(counter_blocks[0], f"{int(round(next_pct))}", flip_time)
+                    _flip_value(counter_blocks[1], f"{next_day}", flip_time)
+                _flip_value(counter_blocks[2], f"{next_date.day:02d}", flip_time, anims)
                 if next_date.month != current_date.month:
-                    _flip_value(counter_blocks[1], f"{next_date.month:02d}", flip_time)
+                    _flip_value(counter_blocks[3], f"{next_date.month:02d}", flip_time)
                 if next_date.year != current_date.year:
-                    _flip_value(counter_blocks[2], f"{next_date.year:04d}", flip_time)
+                    _flip_value(counter_blocks[4], f"{next_date.year:04d}", flip_time)
                 current_date = next_date
                 current_x = new_x
 
