@@ -473,11 +473,11 @@ class GanttTimelineLevel2(Scene):
         counter_boxes = VGroup()
         counter_blocks: list[dict[str, object]] = []
         for label, value in zip(counter_labels, counter_values):
-            box_width = 0.96 if label == "ANO" else 0.76
+            box_width = 0.72 if label == "ANO" else 0.57
             box = RoundedRectangle(
                 width=box_width,
-                height=0.48,
-                corner_radius=0.06,
+                height=0.36,
+                corner_radius=0.05,
                 stroke_width=1,
                 stroke_color=GRAY_D,
                 fill_color=BLACK,
@@ -508,15 +508,15 @@ class GanttTimelineLevel2(Scene):
                 fill_opacity=0.38,
             ).move_to([box.get_center()[0], mid_y - box.height / 4, 0])
 
-            value_text = Text(value, font_size=18, weight=BOLD, color=WHITE)
-            value_text.move_to(box.get_center() + DOWN * 0.03)
-            label_text = Text(label, font_size=7, color=GRAY_B)
-            label_text.next_to(box, UP, buff=0.06)
+            value_text = Text(value, font_size=14, weight=BOLD, color=WHITE)
+            value_text.move_to(box.get_center() + DOWN * 0.02)
+            label_text = Text(label, font_size=6, color=GRAY_B)
+            label_text.next_to(box, UP, buff=0.05)
             card = VGroup(box, top_mask, bottom_mask, split_line, value_text)
             group = VGroup(label_text, card)
             counter_boxes.add(group)
             counter_blocks.append({"group": group, "card": card})
-        counter_boxes.arrange(RIGHT, buff=0.18, aligned_edge=DOWN)
+        counter_boxes.arrange(RIGHT, buff=0.14, aligned_edge=DOWN)
         counter_boxes.to_corner(UR, buff=0.46)
         counter_boxes.shift(UP * 0.04)
 
@@ -1189,8 +1189,8 @@ class GanttTimelineLevel2(Scene):
             extra_anims: list[Animation] | None = None,
         ) -> None:
             old_card: VGroup = block["card"]  # type: ignore[assignment]
-            drop = 0.16
-            new_text = Text(new_value, font_size=18, weight=BOLD, color=WHITE)
+            drop = 0.12
+            new_text = Text(new_value, font_size=14, weight=BOLD, color=WHITE)
             new_text.move_to(old_card[4].get_center())
             new_card = VGroup(
                 old_card[0].copy(),
@@ -1252,69 +1252,43 @@ class GanttTimelineLevel2(Scene):
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
 
-        # Panel vertical derecho con donut de avance diario
+        # Panel vertical derecho con % y días en caja
         target_pct = 19.0
         days_total = max(1, (today_dt.date() - start_date).days)
         pct_tracker = ValueTracker(0.0)
         days_tracker = ValueTracker(0.0)
 
-        donut_outer = 0.6
-        donut_inner = 0.38
+        stats_anchor = RIGHT * 6.1 + UP * 1.6
 
-        def _progress_color(pct: float) -> Color:
-            t = 0.0 if target_pct == 0 else min(1.0, max(0.0, pct / target_pct))
-            return interpolate_color(RED_E, BLUE_E, t)
-
-        def _donut_progress():
-            pct = pct_tracker.get_value()
-            angle = TAU * (pct / 100.0)
-            return AnnularSector(
-                outer_radius=donut_outer,
-                inner_radius=donut_inner,
-                start_angle=PI / 2,
-                angle=-angle,
-                color=_progress_color(pct),
-                fill_opacity=0.9,
-                stroke_width=0,
-            )
-
-        def _donut_remainder():
-            pct = pct_tracker.get_value()
-            angle = TAU * (pct / 100.0)
-            return AnnularSector(
-                outer_radius=donut_outer,
-                inner_radius=donut_inner,
-                start_angle=PI / 2 - angle,
-                angle=TAU - angle,
-                color=GRAY_C,
-                fill_opacity=0.25,
-                stroke_width=0,
-            )
-
-        donut_anchor = RIGHT * 5.6 + UP * 1.6
-
-        donut_progress = always_redraw(lambda: _donut_progress().move_to(donut_anchor))
-        donut_remainder = always_redraw(lambda: _donut_remainder().move_to(donut_anchor))
-        donut_group = VGroup(donut_remainder, donut_progress)
+        # Caja bonita para contener los valores
+        stats_box = RoundedRectangle(
+            width=1.4,
+            height=0.9,
+            corner_radius=0.08,
+            stroke_width=2,
+            stroke_color=GRAY_D,
+            fill_color=BLACK,
+            fill_opacity=0.4,
+        ).move_to(stats_anchor)
 
         pct_text = always_redraw(
             lambda: Text(
                 f"{int(round(pct_tracker.get_value()))}%",
-                font_size=12,
+                font_size=24,
                 weight=BOLD,
                 color=WHITE,
-            ).move_to(donut_anchor)
+            ).move_to(stats_anchor + UP * 0.15)
         )
         day_text = always_redraw(
             lambda: Text(
                 f"DIA {int(round(days_tracker.get_value()))}",
-                font_size=9,
+                font_size=11,
                 color=GRAY_B,
-            ).move_to(donut_anchor + DOWN * 0.36)
+            ).move_to(stats_anchor + DOWN * 0.22)
         )
 
-        donut_block = VGroup(donut_group, pct_text, day_text)
-        self.play(FadeIn(donut_block), run_time=0.4)
+        stats_block = VGroup(stats_box, pct_text, day_text)
+        self.play(FadeIn(stats_block), run_time=0.4)
 
         # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
