@@ -482,7 +482,7 @@ class GanttTimelineLevel2(Scene):
             return f"{int(value):02d}"
 
         counter_scale = 1.4
-        counter_labels = ["R%", "P%", "%", "DIAS", "DIA", "MES", "ANO"]
+        counter_labels = ["Real %", "Plan %", "Días %", "Dias", "Día", "Mes", "Año"]
         counter_values = [
             _fmt2(start_real),
             _fmt2(start_plan),
@@ -495,9 +495,9 @@ class GanttTimelineLevel2(Scene):
         counter_boxes = VGroup()
         counter_blocks: list[dict[str, object]] = []
         for label, value in zip(counter_labels, counter_values):
-            if label == "ANO":
+            if label == "Año":
                 box_width = 0.72 * counter_scale
-            elif label in ("R%", "P%", "%", "DIAS"):
+            elif label in ("Real %", "Plan %", "Días %", "Días"):
                 box_width = 0.62 * counter_scale
             else:
                 box_width = 0.57 * counter_scale
@@ -622,31 +622,26 @@ class GanttTimelineLevel2(Scene):
             x_today = x_prev + (x_next - x_prev) * ratio_local
         else:
             x_today = date_to_x(today)
-        # Dial vintage: solo efecto de desvanecido sin barras de color
+        # Dial vintage: dos líneas finas ubicadas por % sobre la escala TLD
         dial_height = 0.55
-        dial_w = 0.12
         plan_val = avg_planned if avg_planned is not None else 0
         real_val = avg_all if avg_all is not None else 0
-        diff = abs((real_val or 0) - (plan_val or 0))
-        dial_gap = 0.0015 * diff
-        dial_gap = min(0.22, dial_gap)
+        x_real = interpolate(timeline_left[0], timeline_right[0], max(0.0, min(1.0, real_val / 100.0)))
+        x_plan = interpolate(timeline_left[0], timeline_right[0], max(0.0, min(1.0, plan_val / 100.0)))
         dial_y_offset = -0.25
         dial_center_y = scale_y + dial_height / 2 + dial_y_offset
-        # Barras invisibles para mantener la estructura pero sin color visible
-        dial_real = Rectangle(
-            width=dial_w,
-            height=dial_height,
-            stroke_width=0,
-            fill_color=GREEN_E,
-            fill_opacity=0.45,
-        ).move_to([x_today - dial_gap / 2, dial_center_y, 0])
-        dial_plan = Rectangle(
-            width=dial_w,
-            height=dial_height,
-            stroke_width=0,
-            fill_color=GREEN_A,
-            fill_opacity=0.35,
-        ).move_to([x_today + dial_gap / 2, dial_center_y, 0])
+        dial_real = Line(
+            [x_real, dial_center_y - dial_height / 2, 0],
+            [x_real, dial_center_y + dial_height / 2, 0],
+            color=GREEN_E,
+            stroke_width=2,
+        )
+        dial_plan = Line(
+            [x_plan, dial_center_y - dial_height / 2, 0],
+            [x_plan, dial_center_y + dial_height / 2, 0],
+            color=GREEN_A,
+            stroke_width=2,
+        )
         today_line = VGroup(dial_real, dial_plan)
         today_label = Text(f"HOY {today.strftime('%d/%m')}", font_size=11, color=GREEN_E)
         pct_parts = []

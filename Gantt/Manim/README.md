@@ -43,8 +43,8 @@ Nota: la carpeta de salida que el pipeline revisa para copiar/limpiar MP4 se res
 - [x] Implementar filtros internos solo-XLSX con `--nivel` y `--id` (sin `--scope`).
 - [x] Implementar salida de estadística previa para evitar escenas saturadas.
 - [x] Crear `gantt_timeline_v2.py` (mantener `gantt_timeline.py` intacto).
-- [ ] Implementar backup del XLSX junto al MP4 con timestamp y mismo nombre base.
-- [ ] Agregar torta con % de avances.
+- [x] Implementar backup del XLSX junto al MP4 con timestamp y mismo nombre base.
+- [x] Agregar torta con % de avances.
 - [ ] Agregar panel con días totales disponibles y días totales de fines de semana y feriados.
 - [x] Achicar el tamaño de las etiquetas de los días (rojos y azules).
 - [ ] Agregar líneas de tiempo finales (inicio→fin) arriba en la línea superior.
