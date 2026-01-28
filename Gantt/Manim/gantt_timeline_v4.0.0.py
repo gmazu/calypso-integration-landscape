@@ -541,6 +541,14 @@ class GanttTimelineLevel2(Scene):
             value_text.move_to(box.get_center() + DOWN * 0.02)
             label_text = Text(label, font_size=6 * counter_scale, color=GRAY_B)
             label_text.next_to(box, UP, buff=0.05 * counter_scale)
+            if label in ("Real %", "Plan %"):
+                dot_color = GREEN_E if label == "Real %" else GREEN_A
+                dot = Dot(
+                    label_text.get_left() + LEFT * 0.06 * counter_scale,
+                    radius=0.04 * counter_scale,
+                    color=dot_color,
+                )
+                label_text = VGroup(dot, label_text)
             card = VGroup(box, top_mask, bottom_mask, split_line, value_text)
             group = VGroup(label_text, card)
             counter_boxes.add(group)
@@ -867,11 +875,7 @@ class GanttTimelineLevel2(Scene):
                     text_block.shift(DOWN * 0.15)
                 labels.add(text_block)
 
-                # Barra vertical tipo ecualizador (segmentos horizontales)
-                bar_width = 0.18
-                bar_height = abs(target_y - y) * 0.9
-                bar_center = (y + target_y) / 2
-
+                # Barra horizontal de avance (vacía + relleno)
                 pct_val = None
                 if task.get("pct"):
                     try:
@@ -887,104 +891,30 @@ class GanttTimelineLevel2(Scene):
                     )
                     stems_bg.add(stem)
                     continue
-                # Siempre dibujar segmentos de fondo (apagados)
-                seg_count = 14
-                gap_ratio = 0.2
-                seg_height = bar_height / (seg_count + (seg_count - 1) * gap_ratio)
-                seg_gap = seg_height * gap_ratio
-                fill_bg = VGroup()
-                fill_lit = VGroup()
-                halo = Rectangle(
-                    width=bar_width,
+
+                pct_norm = max(0.0, min(1.0, pct_val / 100.0))
+                bar_total = 0.9
+                bar_height = 0.08
+                bar_x = x + 0.18
+                bar_y = target_y
+                bg = Rectangle(
+                    width=bar_total,
+                    height=bar_height,
+                    stroke_width=1,
+                    stroke_color=GRAY_C,
+                    fill_color=BLACK,
+                    fill_opacity=0.25,
+                ).move_to([bar_x + bar_total / 2, bar_y, 0])
+                fill = Rectangle(
+                    width=max(0.01, bar_total * pct_norm),
                     height=bar_height,
                     stroke_width=0,
-                    fill_color=GRAY_E,
-                    fill_opacity=0.12,
-                ).move_to([x, bar_center, 0])
-                fill_bg.add(halo)
-                for s in range(seg_count):
-                    seg = Rectangle(
-                        width=bar_width,
-                        height=seg_height,
-                        stroke_width=0,
-                        fill_color=GRAY_C,
-                        fill_opacity=0.28,
-                    )
-                    if target_y >= y:
-                        seg_y = y + (seg_height / 2) + s * (seg_height + seg_gap)
-                    else:
-                        seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
-                    seg.move_to([x, seg_y, 0])
-                    fill_bg.add(seg)
+                    fill_color=GREEN_C,
+                    fill_opacity=0.9,
+                ).move_to([bar_x + (bar_total * pct_norm) / 2, bar_y, 0])
 
-                # Encender segmentos según % (si hay valor)
-                if pct_val is not None and pct_val > 0:
-                    pct_norm = max(0.0, min(1.0, pct_val / 100.0))
-                    lit_segments = int(round(pct_norm * seg_count))
-                    if pct_norm > 0 and lit_segments == 0:
-                        lit_segments = 1
-                    for s in range(lit_segments):
-                        t = s / max(1, seg_count - 1)
-                        if t <= 0.5:
-                            color = interpolate_color(RED_E, GREEN_B, t * 2)
-                        else:
-                            color = interpolate_color(GREEN_B, BLUE_E, (t - 0.5) * 2)
-                        seg = Rectangle(
-                            width=bar_width,
-                            height=seg_height,
-                            stroke_width=0,
-                            fill_color=color,
-                            fill_opacity=0.95,
-                        )
-                        if target_y >= y:
-                            seg_y = y + (seg_height / 2) + s * (seg_height + seg_gap)
-                        else:
-                            seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
-                        seg.move_to([x, seg_y, 0])
-                        fill_lit.add(seg)
-
-                # Overlay para prueba de calidad: 100% lleno (se anima al final)
-                full_fill = VGroup()
-                for s in range(seg_count):
-                    t = s / max(1, seg_count - 1)
-                    if t <= 0.5:
-                        color = interpolate_color(RED_E, GREEN_B, t * 2)
-                    else:
-                        color = interpolate_color(GREEN_B, BLUE_E, (t - 0.5) * 2)
-                    seg = Rectangle(
-                        width=bar_width,
-                        height=seg_height,
-                        stroke_width=0,
-                        fill_color=color,
-                        fill_opacity=0.8,
-                    )
-                    if target_y >= y:
-                        seg_y = y + (seg_height / 2) + s * (seg_height + seg_gap)
-                    else:
-                        seg_y = y - (seg_height / 2) - s * (seg_height + seg_gap)
-                    seg.move_to([x, seg_y, 0])
-                    full_fill.add(seg)
-                    full_test_segments.add(seg)
-                full_test.add(full_fill)
-                # Cap para 100%: asegura que llegue al borde
-                if pct_val is not None and pct_val >= 99.9:
-                    cap_h = seg_height * 0.6
-                    cap = Rectangle(
-                        width=bar_width,
-                        height=cap_h,
-                        stroke_width=0,
-                        fill_color=YELLOW_B,
-                        fill_opacity=0.95,
-                    )
-                    if target_y >= y:
-                        cap.move_to([x, y + bar_height - cap_h / 2, 0])
-                    else:
-                        cap.move_to([x, y - bar_height + cap_h / 2, 0])
-                    fill_lit.add(cap)
-
-                stems_bg.add(fill_bg)
-                if len(fill_lit) > 0:
-                    stems_lit.add(fill_lit)
+                stems_bg.add(bg)
+                stems_lit.add(fill)
 
             # Marcas de escala (0-100) junto a la barra (solo una vez por fecha)
             scale_marks = VGroup()
