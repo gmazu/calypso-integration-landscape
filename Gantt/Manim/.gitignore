@@ -1,7 +1,7 @@
 media/videos/gantt_timeline_v2/480p15/partial_movie_files/
 media/videos/**/partial_movie_files/
 __pycache__/
-youtube/.secret
+youtube/.client_secret
 .last_render
 .youtube_token.json
 .live_stream.json
