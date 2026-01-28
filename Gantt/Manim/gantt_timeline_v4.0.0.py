@@ -573,6 +573,29 @@ class GanttTimelineLevel2(Scene):
         tmd_label = Text("TLD", font_size=12, color=GRAY_B)
         tmd_label.next_to([timeline_left[0], scale_y, 0], LEFT, buff=0.4)
 
+        # Línea roja central (TLD) con difuminado vertical
+        def _red_glow_at(x_pos: float) -> VGroup:
+            glow = VGroup()
+            glow_height = 1.2
+            glow_segs = 12
+            min_opacity = 0.05
+            for s in range(glow_segs):
+                t0 = s / glow_segs
+                t1 = (s + 1) / glow_segs
+                y0 = scale_y - glow_height / 2 + glow_height * t0
+                y1 = scale_y - glow_height / 2 + glow_height * t1
+                t_mid = (t0 + t1) / 2
+                opacity = min_opacity + (1 - min_opacity) * abs(2 * t_mid - 1)
+                seg = Line(
+                    [x_pos, y0, 0],
+                    [x_pos, y1, 0],
+                    color=RED_E,
+                    stroke_width=1.6,
+                    stroke_opacity=opacity,
+                )
+                glow.add(seg)
+            return glow
+
         # Fecha de hoy (ajuste de año solo si cae dentro del rango del Gantt)
         today = datetime.now()
         if today.year != start_min.year:
@@ -1015,6 +1038,8 @@ class GanttTimelineLevel2(Scene):
         bar_bg = VGroup()
         bar_lit = VGroup()
         bar_full = VGroup()
+        day_segments_map: dict[int, list[Mobject]] = {}
+        business_day_index = 0
         date_guides = VGroup()
         holiday_marks = VGroup()
         scale_keys = sorted(set(date_keys + [t["end"].date() for t in dated]))
@@ -1074,6 +1099,8 @@ class GanttTimelineLevel2(Scene):
                         holiday_marks.add(holiday_label)
                         continue
 
+                    business_day_index += 1
+
                     t_prog = idx_day / max(1, biz_count - 1)
                     # Fondo apagado
                     for dx in dual_offsets:
@@ -1122,7 +1149,9 @@ class GanttTimelineLevel2(Scene):
                         )
                         seg.move_to([seg_x + dx, scale_y, 0])
                         if opacity > 0:
+                            seg.set_opacity(0)
                             bar_lit.add(seg)
+                            day_segments_map.setdefault(business_day_index, []).append(seg)
 
             tick = Line([x0, scale_y + 0.08, 0], [x0, scale_y - 0.08, 0], color=GRAY_B, stroke_width=1)
             if holiday_count > 0:
@@ -1274,7 +1303,12 @@ class GanttTimelineLevel2(Scene):
             ]
             return anims, old_card, new_card
         self.play(Create(timeline), run_time=0.8)
-        self.play(FadeIn(tlu_label), FadeIn(tmd_label), run_time=0.4)
+        red_glow = always_redraw(
+            lambda: _red_glow_at(
+                (_x_from_pct(real_tracker.get_value()) + _x_from_pct(plan_tracker.get_value())) / 2
+            )
+        )
+        self.play(FadeIn(tlu_label), FadeIn(tmd_label), FadeIn(red_glow), run_time=0.4)
         self.play(LaggedStartMap(FadeIn, points, lag_ratio=0.05), run_time=0.9)
         self.play(LaggedStartMap(FadeIn, stems_bg, lag_ratio=0.05), run_time=1.0)
         self.play(LaggedStartMap(FadeIn, dates, lag_ratio=0.05), run_time=0.8)
@@ -1300,11 +1334,11 @@ class GanttTimelineLevel2(Scene):
             self.wait(0.5)
             self.remove(full_test, bar_full)
 
-        # Mostrar valores reales después de la prueba
+        # Mostrar valores reales después de la prueba (ahora animados día a día)
         if stems_lit:
-            self.play(LaggedStartMap(FadeIn, stems_lit, lag_ratio=0.05), run_time=0.8)
+            stems_lit.set_opacity(0)
         if bar_lit:
-            self.play(FadeIn(bar_lit), run_time=0.4)
+            bar_lit.set_opacity(1)
 
         if undated_block:
             self.play(FadeIn(undated_block), run_time=0.6)
@@ -1314,6 +1348,10 @@ class GanttTimelineLevel2(Scene):
         days_tracker = ValueTracker(start_day_count)
         real_tracker.set_value(start_real)
         plan_tracker.set_value(start_plan)
+        for seg in day_segments_map.get(start_day_count, []):
+            seg.set_opacity(1)
+        if stems_lit:
+            stems_lit.set_opacity(start_day_count / max(1, days_total))
 
         # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
@@ -1349,6 +1387,11 @@ class GanttTimelineLevel2(Scene):
                     anims.append(plan_tracker.animate.set_value(next_plan))
                     flips.append((counter_blocks[2], _fmt2(int(round(next_pct)))))
                     flips.append((counter_blocks[3], _fmt2(next_day)))
+                    for seg in day_segments_map.get(next_day, []):
+                        anims.append(seg.animate.set_opacity(1))
+                    if stems_lit:
+                        progress_ratio = next_day / max(1, days_total)
+                        anims.append(stems_lit.animate.set_opacity(progress_ratio))
 
                 if next_date.month != current_date.month:
                     flips.append((counter_blocks[5], _fmt2(next_date.month)))

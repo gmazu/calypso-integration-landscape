@@ -100,6 +100,13 @@ def resolve_script_path() -> Path:
     return Path(__file__).with_name(script_name)
 
 
+def update_last_render(hidden_path: Path, video_path: Path) -> None:
+    try:
+        hidden_path.write_text(f"{video_path}\n", encoding="utf-8")
+    except OSError:
+        pass
+
+
 def compute_sha256(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -229,6 +236,7 @@ def main() -> int:
     latest = find_latest_mp4(media_root)
     if latest:
         prune_other_mp4s(latest)
+        update_last_render(Path(__file__).with_name(".last_render"), latest)
         if args.keep_scene:
             args.keep_scene.mkdir(parents=True, exist_ok=True)
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
