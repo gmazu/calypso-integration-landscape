@@ -628,10 +628,7 @@ class GanttTimelineLevel2(Scene):
         plan_val = avg_planned if avg_planned is not None else 0
         real_val = avg_all if avg_all is not None else 0
         diff = abs((real_val or 0) - (plan_val or 0))
-        if diff == 0:
-            dial_gap = 0.0
-        else:
-            dial_gap = 0.02 + 0.0015 * diff
+        dial_gap = 0.0015 * diff
         dial_gap = min(0.22, dial_gap)
         dial_y_offset = -0.25
         dial_center_y = scale_y + dial_height / 2 + dial_y_offset
