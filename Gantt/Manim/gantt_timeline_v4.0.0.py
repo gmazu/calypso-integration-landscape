@@ -626,23 +626,65 @@ class GanttTimelineLevel2(Scene):
         dial_height = 0.55
         plan_val = avg_planned if avg_planned is not None else 0
         real_val = avg_all if avg_all is not None else 0
-        x_real = interpolate(timeline_left[0], timeline_right[0], max(0.0, min(1.0, real_val / 100.0)))
-        x_plan = interpolate(timeline_left[0], timeline_right[0], max(0.0, min(1.0, plan_val / 100.0)))
         dial_y_offset = -0.25
         dial_center_y = scale_y + dial_height / 2 + dial_y_offset
-        dial_real = Line(
-            [x_real, dial_center_y - dial_height / 2, 0],
-            [x_real, dial_center_y + dial_height / 2, 0],
-            color=GREEN_E,
-            stroke_width=2,
+        real_tracker = ValueTracker(real_val)
+        plan_tracker = ValueTracker(plan_val)
+
+        def _x_from_pct(pct: float) -> float:
+            return interpolate(timeline_left[0], timeline_right[0], max(0.0, min(1.0, pct / 100.0)))
+
+        def _membrane(width: float, height: float, opacity: float):
+            return Rectangle(
+                width=max(0.001, width),
+                height=height,
+                stroke_width=0,
+                fill_color=GREEN_C,
+                fill_opacity=opacity,
+            )
+
+        dial_membrane = always_redraw(
+            lambda: VGroup(
+                _membrane(
+                    abs(_x_from_pct(real_tracker.get_value()) - _x_from_pct(plan_tracker.get_value())),
+                    dial_height,
+                    0.28,
+                ),
+                _membrane(
+                    abs(_x_from_pct(real_tracker.get_value()) - _x_from_pct(plan_tracker.get_value())) * 1.08,
+                    dial_height * 1.15,
+                    0.12,
+                ),
+                _membrane(
+                    abs(_x_from_pct(real_tracker.get_value()) - _x_from_pct(plan_tracker.get_value())) * 1.16,
+                    dial_height * 1.3,
+                    0.06,
+                ),
+            ).move_to(
+                [
+                    (_x_from_pct(real_tracker.get_value()) + _x_from_pct(plan_tracker.get_value())) / 2,
+                    dial_center_y,
+                    0,
+                ]
+            )
         )
-        dial_plan = Line(
-            [x_plan, dial_center_y - dial_height / 2, 0],
-            [x_plan, dial_center_y + dial_height / 2, 0],
-            color=GREEN_A,
-            stroke_width=2,
+        dial_real = always_redraw(
+            lambda: Line(
+                [_x_from_pct(real_tracker.get_value()), dial_center_y - dial_height / 2, 0],
+                [_x_from_pct(real_tracker.get_value()), dial_center_y + dial_height / 2, 0],
+                color=GREEN_E,
+                stroke_width=2,
+            )
         )
-        today_line = VGroup(dial_real, dial_plan)
+        dial_plan = always_redraw(
+            lambda: Line(
+                [_x_from_pct(plan_tracker.get_value()), dial_center_y - dial_height / 2, 0],
+                [_x_from_pct(plan_tracker.get_value()), dial_center_y + dial_height / 2, 0],
+                color=GREEN_A,
+                stroke_width=2,
+            )
+        )
+        today_line = VGroup(dial_membrane, dial_real, dial_plan)
         today_label = Text(f"HOY {today.strftime('%d/%m')}", font_size=11, color=GREEN_E)
         pct_parts = []
         if avg_all is not None:
@@ -1270,6 +1312,8 @@ class GanttTimelineLevel2(Scene):
         # Contadores de % y días (mismo estilo de reloj)
         pct_tracker = ValueTracker(start_pct)
         days_tracker = ValueTracker(start_day_count)
+        real_tracker.set_value(start_real)
+        plan_tracker.set_value(start_plan)
 
         # Dial de "hoy" en movimiento (TLD)
         x_start = date_to_x(datetime.combine(start_date, datetime.min.time()))
@@ -1286,8 +1330,7 @@ class GanttTimelineLevel2(Scene):
                 next_date = current_date + timedelta(days=1)
                 new_x = date_to_x(datetime.combine(next_date, datetime.min.time()))
                 anims: list[Animation] = []
-                if today_line:
-                    anims.append(today_line.animate.shift(RIGHT * (new_x - current_x)))
+                # dial se mueve por % (trackers), no por desplazamiento fijo
 
                 flips: list[tuple[dict[str, object], str]] = []
                 flips.append((counter_blocks[4], _fmt2(next_date.day)))
@@ -1302,6 +1345,8 @@ class GanttTimelineLevel2(Scene):
                     next_plan = min(planned_pct_val, (planned_pct_val / days_total) * next_day)
                     flips.append((counter_blocks[0], _fmt2(int(round(next_real)))))
                     flips.append((counter_blocks[1], _fmt2(int(round(next_plan)))))
+                    anims.append(real_tracker.animate.set_value(next_real))
+                    anims.append(plan_tracker.animate.set_value(next_plan))
                     flips.append((counter_blocks[2], _fmt2(int(round(next_pct)))))
                     flips.append((counter_blocks[3], _fmt2(next_day)))
 
