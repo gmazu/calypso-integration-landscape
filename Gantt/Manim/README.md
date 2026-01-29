@@ -56,8 +56,43 @@ Nota: la carpeta de salida que el pipeline revisa para copiar/limpiar MP4 se res
 - [ ] Actualizar barras de % al ritmo del avance de los días.
 - [x] Ajustar separación del dial R/P: si R=P debe verse una sola línea; si difieren, separar según %.
 
+## Pendientes (Task/Tasks.lists)
+- [ ] Agendar reunión con Nasdaq para entender Calypso por dentro.
+- [ ] Levantar cómo funciona Calypso internamente (arquitectura y componentes).
+- [ ] Hacer el diseño de arquitectura “bonito” (Manila).
+- [ ] Confirmar / hacer el diseño de la arquitectura técnica real.
+- [ ] Actualizar la GAN y recalcular fechas.
+- [ ] Abrir y alinear el canal de fechas dependientes del switch.
+- [ ] Revisar arquitectura actual de OpenShift (active-standby).
+- [ ] Evaluar y definir si se pasa a active-active.
+- [ ] Mandar la Gantt producción.
+- [ ] Enviar lista de actividades a actualizar a la Gantt de preprod.
+- [ ] Enviar los numeros de serie a hosting.
+- [ ] Enviar las IPs de preprod a Sixmanager.
+
+## Pendientes (Formularios ID 6)
+- [x] Formulario de Housing (Preproducción)
+- [x] Formulario de solicitud de IPs (Preproducción)
+- [ ] Call para detallar Housing + IPs (Preproducción) y enviarlas
+- [ ] Formulario de Housing e IPs (Producción)
+- [ ] Formulario de ingreso al data center (2026-03-24 a 2026-03-27)
+- [x/] Formulario de solicitud de Storage
+- [ ] Solicitar a Sixmanager lista de usuarios (usernames) y puertos requeridos para accesos VPN
+- [ ] Formulario de usuarios para accesos VPN
+  - [ ] Formularios VPN (BCI) (después de IPs y usuarios)
+- [ ] Formulario de acceso a GIT (entre 2026-02-02 y 2026-02-06)
+- [ ] Call con monitoreo para revisar formularios 9, 10 y 11 (entre 2026-02-02 y 2026-02-06). Requiere diseños AS-IS.
+- [ ] Formulario integración con respaldos
+- [ ] Formularios de Integración Nagios
+- [ ] Formularios de integración Grafana
+- [ ] Formularios Dynatrace
+- [ ] Formularios Integración con AD
+- [ ] Formularios Integración APIM
+- [ ] Call con Housing para definir las posiciones definitivas
+
 ## Contexto
 - [ ] Esperar y pedir VB antes de hacer cambios.
+Nota: lista de tareas general en `/home/gmazuel/eVΛ/BCI/Calypso/CalypsoBCI/Gantt/Task/Tasks.lists`.
 
 ## Calendario feriados 2026 (Chile)
 Fuente:
