@@ -57,38 +57,38 @@ Nota: la carpeta de salida que el pipeline revisa para copiar/limpiar MP4 se res
 - [x] Ajustar separación del dial R/P: si R=P debe verse una sola línea; si difieren, separar según %.
 
 ## Pendientes (Task/Tasks.lists)
-- [ ] Agendar reunión con Nasdaq para entender Calypso por dentro.
-- [ ] Levantar cómo funciona Calypso internamente (arquitectura y componentes).
-- [ ] Hacer el diseño de arquitectura “bonito” (Manila).
-- [ ] Confirmar / hacer el diseño de la arquitectura técnica real.
-- [ ] Actualizar la GAN y recalcular fechas.
-- [ ] Abrir y alinear el canal de fechas dependientes del switch.
-- [ ] Revisar arquitectura actual de OpenShift (active-standby).
-- [ ] Evaluar y definir si se pasa a active-active.
-- [ ] Mandar la Gantt producción.
-- [ ] Enviar lista de actividades a actualizar a la Gantt de preprod.
-- [ ] Enviar los numeros de serie a hosting.
-- [ ] Enviar las IPs de preprod a Sixmanager.
+1. [ ] Agendar reunión con Nasdaq para entender Calypso por dentro (incluye arquitectura y componentes).
+2. [ ] Hacer el diseño de arquitectura “bonito” (MANIM).
+3. [ ] Confirmar / hacer el diseño de la arquitectura técnica real.
+4. [ ] Actualizar la GAN y recalcular fechas.
+5. [/] Abrir y alinear el canal de fechas dependientes del switch.
+6. [ ] Revisar arquitectura actual de OpenShift (active-standby) y evaluar si se pasa a active-active.
+7. [ ] Mandar la Gantt producción.
+8. [ ] Enviar lista de actividades a actualizar a la Gantt de preprod.
+9. [ ] Enviar los numeros de serie a hosting.
+10. [ ] Enviar las IPs de preprod a Sixmanager.
+11. [ ] Call con Housing para definir las posiciones definitivas.
+12. [ ] Call para detallar Housing + IPs (Preproducción) y enviarlas.
+13. [ ] Solicitar a Sixmanager lista de usuarios (usernames) y puertos requeridos para accesos VPN.
+14. [ ] Enviar correo a Calypso para levantar el AS-IS.
+15. [ ] Pedir a Rodrigo Briones el AS-IS.
+16. [ ] Call con monitoreo para revisar formularios ID-12, ID-13 y ID-14 (entre 2026-02-02 y 2026-02-06).
 
 ## Pendientes (Formularios ID 6)
-- [x] Formulario de Housing (Preproducción)
-- [x] Formulario de solicitud de IPs (Preproducción)
-- [ ] Call para detallar Housing + IPs (Preproducción) y enviarlas
-- [ ] Formulario de Housing e IPs (Producción)
-- [ ] Formulario de ingreso al data center (2026-03-24 a 2026-03-27)
-- [x/] Formulario de solicitud de Storage
-- [ ] Solicitar a Sixmanager lista de usuarios (usernames) y puertos requeridos para accesos VPN
-- [ ] Formulario de usuarios para accesos VPN
-  - [ ] Formularios VPN (BCI) (después de IPs y usuarios)
-- [ ] Formulario de acceso a GIT (entre 2026-02-02 y 2026-02-06)
-- [ ] Call con monitoreo para revisar formularios 9, 10 y 11 (entre 2026-02-02 y 2026-02-06). Requiere diseños AS-IS.
-- [ ] Formulario integración con respaldos
-- [ ] Formularios de Integración Nagios
-- [ ] Formularios de integración Grafana
-- [ ] Formularios Dynatrace
-- [ ] Formularios Integración con AD
-- [ ] Formularios Integración APIM
-- [ ] Call con Housing para definir las posiciones definitivas
+1. [x] Formulario de Housing (Preproducción)
+2. [x] Formulario de solicitud de IPs (Preproducción)
+3. [ ] Formulario de Housing e IPs (Producción)
+4. [ ] Formulario de ingreso al data center (2026-03-24 a 2026-03-27)
+5. [x/] Formulario de solicitud de Storage
+6. [ ] Formulario de usuarios para accesos VPN
+7. [ ] Formularios VPN (BCI) (después de IPs y usuarios)
+8. [ ] Formulario de acceso a GIT (entre 2026-02-02 y 2026-02-06)
+9. [ ] Formulario integración con respaldos
+10. [ ] Formularios de Integración Nagios
+11. [ ] Formularios de integración Grafana
+12. [ ] Formularios Dynatrace
+13. [ ] Formularios Integración con AD
+14. [ ] Formularios Integración APIM
 
 ## Contexto
 - [ ] Esperar y pedir VB antes de hacer cambios.
